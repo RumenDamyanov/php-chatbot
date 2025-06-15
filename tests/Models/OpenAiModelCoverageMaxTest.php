@@ -12,6 +12,17 @@ it('OpenAiModel setModel and getModel (direct)', function () {
     expect($model->getModel())->toBe('gpt-4');
 });
 
+it('OpenAiModel setModel and getModel work as expected', function () {
+    $model = new \Rumenx\PhpChatbot\Models\OpenAiModel('dummy-key', 'gpt-3.5-turbo');
+    $model->setModel('gpt-4');
+    expect($model->getModel())->toBe('gpt-4');
+});
+
+it('OpenAiModel getModel returns initial model', function () {
+    $model = new \Rumenx\PhpChatbot\Models\OpenAiModel('dummy-key', 'gpt-3.5-turbo');
+    expect($model->getModel())->toBe('gpt-3.5-turbo');
+});
+
 it('OpenAiModel logs cURL error with logger', function () {
     $logger = new DummyLogger();
     $model = new OpenAiModel('invalid-key', 'gpt-3.5-turbo', 'http://localhost:9999/invalid');

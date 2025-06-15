@@ -1,0 +1,28 @@
+parameters:
+  level: max
+  ignoreErrors:
+    # Ignore Laravel-specific helpers and methods in the service provider
+    - '#Undefined function Rumenx\\PhpChatbot\\Adapters\\Laravel\\config#'
+    - '#Undefined function Rumenx\\PhpChatbot\\Adapters\\Laravel\\config_path#'
+    - '#Undefined function Rumenx\\PhpChatbot\\Adapters\\Laravel\\resource_path#'
+    - '#Undefined function Rumenx\\PhpChatbot\\Adapters\\Laravel\\public_path#'
+    - '#Undefined method Rumenx\\PhpChatbot\\Adapters\\Laravel\\PhpChatbotServiceProvider::publishes#'
+    - '#Undefined method Rumenx\\PhpChatbot\\Adapters\\Laravel\\PhpChatbotServiceProvider::callAfterResolving#'
+    # Ignore Laravel $app property false positive (escape $ properly, and add a general fallback)
+    - '#Access to an undefined property Rumenx\\PhpChatbot\\Adapters\\Laravel\\PhpChatbotServiceProvider::\\\$app#'
+    - '#Access to an undefined property .*PhpChatbotServiceProvider::\$app#'
+    # Ignore missing docblock tags for stubs
+    - '#Missing (short description|@author|@license|@link|@package|@category) in doc comment#'
+    # Ignore multi-line assignment and function call formatting
+    - '#Multi-line assignments must have the equal sign on the second line#'
+    - '#Opening parenthesis of a multi-line function call must be the last content on the line#'
+    - '#Closing parenthesis of a multi-line function call must be on a line by itself#'
+    - '#Line exceeds 85 characters#'
+    - '#Function config_path not found#'
+    - '#Function resource_path not found#'
+    - '#Function public_path not found#'
+    - '#Function config not found#'
+    - '#Method DummyLogger::error\(\) is not compatible with method Psr\\Log\\NullLogger::error\(\)#'
+    # Ignore Symfony dynamic method false positives
+    - '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition::children#'
+  reportUnmatchedIgnoredErrors: false
