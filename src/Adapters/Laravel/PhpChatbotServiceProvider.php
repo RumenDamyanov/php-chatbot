@@ -1,20 +1,33 @@
 <?php
 
-namespace Rumenx\PhpChatbot\Adapters\Laravel;
-
 /**
  * Laravel service provider for php-chatbot.
  *
  * Registers the PhpChatbot singleton and publishes config, views, and assets.
  * Note: This class requires Laravel's ServiceProvider and helpers at runtime.
+ *
+ * @category   ServiceProvider
+ * @package    Rumenx\PhpChatbot
+ * @author     Rumen Damyanov <contact@rumenx.com>
+ * @license    MIT License (https://opensource.org/licenses/MIT)
+ * @link       https://github.com/RumenDamyanov/php-chatbot
+ * @phpversion 8.3
  */
+
+namespace Rumenx\PhpChatbot\Adapters\Laravel;
+
 use Rumenx\PhpChatbot\PhpChatbot;
 use Rumenx\PhpChatbot\Models\ModelFactory;
 
 if (class_exists('Illuminate\\Support\\ServiceProvider')) {
     /**
+     * Laravel service provider for php-chatbot.
+     *
      * @category ServiceProvider
      * @package  Rumenx\PhpChatbot
+     * @author   Rumen Damyanov <contact@rumenx.com>
+     * @license  MIT License (https://opensource.org/licenses/MIT)
+     * @link     https://github.com/RumenDamyanov/php-chatbot
      * @property \Illuminate\Contracts\Foundation\Application $app
      */
     class PhpChatbotServiceProvider extends \Illuminate\Support\ServiceProvider
@@ -26,11 +39,14 @@ if (class_exists('Illuminate\\Support\\ServiceProvider')) {
          */
         public function register(): void
         {
-            $this->app->singleton(PhpChatbot::class, function ($app) {
-                $config = function_exists('config') ? config('phpchatbot') : [];
-                $model = ModelFactory::make($config);
-                return new PhpChatbot($model, $config);
-            });
+            $this->app->singleton(
+                PhpChatbot::class,
+                function ($app) {
+                    $config = function_exists('config') ? config('phpchatbot') : [];
+                    $model = ModelFactory::make($config);
+                    return new PhpChatbot($model, $config);
+                }
+            );
         }
 
         /**
@@ -44,38 +60,59 @@ if (class_exists('Illuminate\\Support\\ServiceProvider')) {
         {
             $publish = [];
             if (function_exists('config_path')) {
-                $publish[__DIR__ . '/../../Config/phpchatbot.php'] =
-                    config_path('phpchatbot.php');
+                $publish[
+                    __DIR__ . '/../../Config/phpchatbot.php'
+                ] = config_path(
+                    'phpchatbot.php'
+                );
             }
             if (function_exists('resource_path')) {
-                $publish[__DIR__ . '/../../../resources/views'] =
-                    resource_path('views/vendor/php-chatbot');
+                $publish[
+                    __DIR__ . '/../../../resources/views'
+                ] = resource_path(
+                    'views/vendor/php-chatbot'
+                );
             }
             if (function_exists('public_path')) {
-                $publish[__DIR__ . '/../../../resources/css'] =
-                    public_path('vendor/php-chatbot/css');
+                $publish[
+                    __DIR__ . '/../../../resources/css'
+                ] = public_path(
+                    'vendor/php-chatbot/css'
+                );
             }
             if (!empty($publish) && method_exists($this, 'publishes')) {
                 // Single vendor tag for all assets
-                $this->publishes($publish, 'php-chatbot');
+                $this->publishes(
+                    $publish,
+                    'php-chatbot'
+                );
                 // Legacy tags for backward compatibility
                 if (isset($publish[__DIR__ . '/../../Config/phpchatbot.php'])) {
-                    $this->publishes([
-                        __DIR__ . '/../../Config/phpchatbot.php' =>
-                            config_path('phpchatbot.php'),
-                    ], 'config');
+                    $this->publishes(
+                        [
+                            __DIR__ . '/../../Config/phpchatbot.php'
+                                => config_path('phpchatbot.php')
+                        ],
+                        'config'
+                    );
                 }
                 if (isset($publish[__DIR__ . '/../../../resources/views'])) {
-                    $this->publishes([
-                        __DIR__ . '/../../../resources/views' =>
-                            resource_path('views/vendor/php-chatbot'),
-                    ], 'views');
+                    $this->publishes(
+                        [
+                            __DIR__ . '/../../../resources/views'
+                                => resource_path('views/vendor/php-chatbot')
+                        ],
+                        'views'
+                    );
                 }
                 if (isset($publish[__DIR__ . '/../../../resources/css'])) {
-                    $this->publishes([
-                        __DIR__ . '/../../../resources/css' =>
-                            public_path('vendor/php-chatbot/css'),
-                    ], 'assets');
+                    $this->publishes(
+                        [
+                            __DIR__ . '/../../../resources/css'
+                                => public_path('vendor/php-chatbot/css')
+                        ],
+                        'assets'
+                    );
                 }
             }
             // Support for booting callbacks (Laravel 9+)
@@ -87,28 +124,6 @@ if (class_exists('Illuminate\\Support\\ServiceProvider')) {
                     }
                 );
             }
-        }
-    }
-} else {
-    /**
-     * Stub for static analysis and non-Laravel environments.
-     *
-     * @category ServiceProvider
-     * @package  Rumenx\PhpChatbot
-     */
-    class PhpChatbotServiceProvider
-    {
-        /**
-         * @return void
-         */
-        public function register(): void
-        {
-        }
-        /**
-         * @return void
-         */
-        public function boot(): void
-        {
         }
     }
 }

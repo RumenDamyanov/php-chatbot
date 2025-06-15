@@ -78,14 +78,16 @@ class DeepSeekAiModel implements AiModelInterface
                 $systemPrompt = $prompt;
             }
             $temperature = 0.7;
-            if (isset($context['temperature'])
+            if (
+                isset($context['temperature'])
                 && is_numeric($context['temperature'])
             ) {
                 $temp = $context['temperature'];
                 $temperature = (float) $temp;
             }
             $maxTokens = 256;
-            if (isset($context['max_tokens'])
+            if (
+                isset($context['max_tokens'])
                 && is_numeric($context['max_tokens'])
             ) {
                 $tokens = $context['max_tokens'];
@@ -115,7 +117,8 @@ class DeepSeekAiModel implements AiModelInterface
             $result = curl_exec($ch);
             if ($result === false) {
                 $error = curl_error($ch);
-                if (isset($context['logger'])
+                if (
+                    isset($context['logger'])
                     && $context['logger'] instanceof \Psr\Log\LoggerInterface
                 ) {
                     $context['logger']->error(
@@ -133,13 +136,15 @@ class DeepSeekAiModel implements AiModelInterface
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
-            if (is_array($response)
+            if (
+                is_array($response)
                 && isset($response['choices'][0]['message']['content'])
                 && is_string($response['choices'][0]['message']['content'])
             ) {
                 return $response['choices'][0]['message']['content'];
             }
-            if (isset($context['logger'])
+            if (
+                isset($context['logger'])
                 && $context['logger'] instanceof \Psr\Log\LoggerInterface
             ) {
                 $context['logger']->error(
@@ -154,7 +159,8 @@ class DeepSeekAiModel implements AiModelInterface
                 ]
             ) ?: '{"status":"error","message":"[DeepSeek] JSON encode failed."}';
         } catch (\Throwable $e) {
-            if (isset($context['logger'])
+            if (
+                isset($context['logger'])
                 && $context['logger'] instanceof \Psr\Log\LoggerInterface
             ) {
                 $context['logger']->error(

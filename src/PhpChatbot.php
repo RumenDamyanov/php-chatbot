@@ -27,14 +27,14 @@ final class PhpChatbot
      *
      * @var AiModelInterface
      */
-    private AiModelInterface $_model;
+    protected $model;
 
     /**
      * Default configuration for the chatbot.
      *
      * @var array<string, mixed>
      */
-    private array $_config;
+    protected $config;
 
     /**
      * Constructor for PhpChatbot.
@@ -46,8 +46,8 @@ final class PhpChatbot
         AiModelInterface $model,
         array $config = []
     ) {
-        $this->_model = $model;
-        $this->_config = $config;
+        $this->model = $model;
+        $this->config = $config;
     }
 
     /**
@@ -63,8 +63,8 @@ final class PhpChatbot
         string $input,
         array $context = []
     ): string {
-        $context = array_merge($this->_config, $context);
-        return $this->_model->getResponse($input, $context);
+        $context = array_merge($this->config, $context);
+        return $this->model->getResponse($input, $context);
     }
 
     /**
@@ -74,7 +74,7 @@ final class PhpChatbot
      */
     public function getModel(): AiModelInterface
     {
-        return $this->_model;
+        return $this->model;
     }
 
     /**
@@ -86,7 +86,7 @@ final class PhpChatbot
      */
     public function setModel(AiModelInterface $model): void
     {
-        $this->_model = $model;
+        $this->model = $model;
     }
 
     /**
@@ -96,7 +96,7 @@ final class PhpChatbot
      */
     public function getConfig(): array
     {
-        return $this->_config;
+        return $this->config;
     }
 
     /**
@@ -108,6 +108,6 @@ final class PhpChatbot
      */
     public function setConfig(array $config): void
     {
-        $this->_config = $config;
+        $this->config = $config;
     }
 }

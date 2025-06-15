@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Anthropic Claude model adapter for php-chatbot.
  *
@@ -93,14 +94,16 @@ class AnthropicModel implements AiModelInterface
                 $systemPrompt = $context['prompt'];
             }
             $maxTokens = 256;
-            if (isset($context['max_tokens'])
+            if (
+                isset($context['max_tokens'])
                 && is_numeric($context['max_tokens'])
             ) {
                 $tokens = $context['max_tokens'];
                 $maxTokens = (int) $tokens;
             }
             $temperature = 0.7;
-            if (isset($context['temperature'])
+            if (
+                isset($context['temperature'])
                 && is_numeric($context['temperature'])
             ) {
                 $temp = $context['temperature'];
@@ -135,7 +138,8 @@ class AnthropicModel implements AiModelInterface
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
-            if (is_array($response)
+            if (
+                is_array($response)
                 && isset($response['choices'][0]['message']['content'])
                 && is_string($response['choices'][0]['message']['content'])
             ) {

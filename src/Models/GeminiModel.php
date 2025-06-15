@@ -23,19 +23,19 @@ class GeminiModel implements AiModelInterface
      *
      * @var string
      */
-    private string $_apiKey;
+    protected string $apiKey;
     /**
      * The model name.
      *
      * @var string
      */
-    private string $_model;
+    protected string $model;
     /**
      * The API endpoint.
      *
      * @var string
      */
-    private string $_endpoint;
+    protected string $endpoint;
 
     /**
      * GeminiModel constructor.
@@ -49,9 +49,9 @@ class GeminiModel implements AiModelInterface
         string $model = 'gemini-default',
         string $endpoint = 'https://api.gemini.com/v1/chat'
     ) {
-        $this->_apiKey = $apiKey;
-        $this->_model = $model;
-        $this->_endpoint = $endpoint;
+        $this->apiKey = $apiKey;
+        $this->model = $model;
+        $this->endpoint = $endpoint;
     }
 
     /**
@@ -63,7 +63,7 @@ class GeminiModel implements AiModelInterface
      */
     public function setModel(string $model): void
     {
-        $this->_model = $model;
+        $this->model = $model;
     }
 
     /**
@@ -73,7 +73,7 @@ class GeminiModel implements AiModelInterface
      */
     public function getModel(): string
     {
-        return $this->_model;
+        return $this->model;
     }
 
     /**
@@ -103,9 +103,9 @@ class GeminiModel implements AiModelInterface
                     ]
                 ]
             ];
-            $url = rtrim($this->_endpoint, '/')
-                . '/' . $this->_model
-                . ':generateContent?key=' . $this->_apiKey;
+            $url = rtrim($this->endpoint, '/')
+                . '/' . $this->model
+                . ':generateContent?key=' . $this->apiKey;
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
@@ -114,6 +114,7 @@ class GeminiModel implements AiModelInterface
                 CURLOPT_HTTPHEADER,
                 [
                     'Content-Type: application/json',
+                    'Authorization: Bearer ' . $this->apiKey,
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -125,7 +126,8 @@ class GeminiModel implements AiModelInterface
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
-            if (is_array($response)
+            if (
+                is_array($response)
                 && isset($response['candidates'][0]['content']['parts'][0]['text'])
                 && is_string(
                     $response['candidates'][0]['content']['parts'][0]['text']
@@ -133,9 +135,25 @@ class GeminiModel implements AiModelInterface
             ) {
                 return $response['candidates'][0]['content']['parts'][0]['text'];
             }
+            // Fallback for missing candidates/content
             return '[Google Gemini] No response.';
         } catch (\Throwable $e) {
             return '[Google Gemini] Exception: ' . $e->getMessage();
         }
+    }
+
+    /**
+     * Send a message to the Gemini model (placeholder).
+     *
+     * @param string               $message The message to send.
+     * @param array<string, mixed> $context Optional context for the request.
+     *
+     * @return string The response from the Gemini model.
+     */
+    public function sendMessage(string $message, array $context = []): string
+    {
+        return '[Google Gemini/'
+            . $this->model
+            . '] This is a placeholder response.';
     }
 }

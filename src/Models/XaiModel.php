@@ -23,19 +23,19 @@ class XaiModel implements AiModelInterface
      *
      * @var string
      */
-    private string $_apiKey;
+    protected string $apiKey;
     /**
      * The model name.
      *
      * @var string
      */
-    private string $_model;
+    protected string $model;
     /**
      * The API endpoint.
      *
      * @var string
      */
-    private string $_endpoint;
+    protected string $endpoint;
 
     /**
      * XaiModel constructor.
@@ -49,9 +49,9 @@ class XaiModel implements AiModelInterface
         string $model = 'xai-default',
         string $endpoint = 'https://api.xai.com/v1/chat'
     ) {
-        $this->_apiKey = $apiKey;
-        $this->_model = $model;
-        $this->_endpoint = $endpoint;
+        $this->apiKey = $apiKey;
+        $this->model = $model;
+        $this->endpoint = $endpoint;
     }
 
     /**
@@ -63,7 +63,7 @@ class XaiModel implements AiModelInterface
      */
     public function setModel(string $model): void
     {
-        $this->_model = $model;
+        $this->model = $model;
     }
 
     /**
@@ -73,7 +73,7 @@ class XaiModel implements AiModelInterface
      */
     public function getModel(): string
     {
-        return $this->_model;
+        return $this->model;
     }
 
     /**
@@ -88,28 +88,31 @@ class XaiModel implements AiModelInterface
     {
         try {
             $systemPrompt = 'You are a helpful chatbot.';
-            if (isset($context['prompt'])
+            if (
+                isset($context['prompt'])
                 && is_string($context['prompt'])
             ) {
                 $prompt = $context['prompt'];
                 $systemPrompt = $prompt;
             }
             $maxTokens = 256;
-            if (isset($context['max_tokens'])
+            if (
+                isset($context['max_tokens'])
                 && is_numeric($context['max_tokens'])
             ) {
                 $tokens = $context['max_tokens'];
                 $maxTokens = (int) $tokens;
             }
             $temperature = 0.7;
-            if (isset($context['temperature'])
+            if (
+                isset($context['temperature'])
                 && is_numeric($context['temperature'])
             ) {
                 $temp = $context['temperature'];
                 $temperature = (float) $temp;
             }
             $data = [
-                'model' => $this->_model,
+                'model' => $this->model,
                 'messages' => [
                     ['role' => 'system', 'content' => $systemPrompt],
                     ['role' => 'user', 'content' => $input],
@@ -117,7 +120,7 @@ class XaiModel implements AiModelInterface
                 'max_tokens' => $maxTokens,
                 'temperature' => $temperature,
             ];
-            $ch = curl_init($this->_endpoint);
+            $ch = curl_init($this->endpoint);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt(
@@ -125,7 +128,7 @@ class XaiModel implements AiModelInterface
                 CURLOPT_HTTPHEADER,
                 [
                     'Content-Type: application/json',
-                    'Authorization: Bearer ' . $this->_apiKey,
+                    'Authorization: Bearer ' . $this->apiKey,
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -137,15 +140,30 @@ class XaiModel implements AiModelInterface
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
-            if (is_array($response)
+            if (
+                is_array($response)
                 && isset($response['choices'][0]['message']['content'])
                 && is_string($response['choices'][0]['message']['content'])
             ) {
                 return $response['choices'][0]['message']['content'];
             }
+            // Fallback for missing choices/content
             return '[xAI] No response.';
         } catch (\Throwable $e) {
             return '[xAI] Exception: ' . $e->getMessage();
         }
+    }
+
+    /**
+     * Send a message to the xAI model (placeholder).
+     *
+     * @param string               $message The message to send.
+     * @param array<string, mixed> $context Optional context for the request.
+     *
+     * @return string The response from the xAI model.
+     */
+    public function sendMessage(string $message, array $context = []): string
+    {
+        return '[xAI/' . $this->model . '] This is a placeholder response.';
     }
 }
