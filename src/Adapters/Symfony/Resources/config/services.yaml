@@ -1,0 +1,10 @@
+# Register the PhpChatbot service for Symfony
+services:
+    Rumenx\PhpChatbot\PhpChatbot:
+        public: true
+        arguments:
+            $model: '@Rumenx\PhpChatbot\Models\ModelFactory'
+            $config: []
+    Rumenx\PhpChatbot\Models\ModelFactory:
+        public: false
+        arguments: []

@@ -1,0 +1,6 @@
+# Default configuration for php-chatbot Symfony bundle
+php_chatbot:
+    # Add your configuration options here
+    # Example:
+    # api_key: '%env(PHP_CHATBOT_API_KEY)%'
+    # model: 'gpt-3.5-turbo'
