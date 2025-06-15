@@ -7,9 +7,10 @@
 /coverage-html/
 /.env
 /.env.*
+!/.env.example
 /.DS_Store
 /node_modules/
-/.idea/
+/idea/
 /.vscode/
 /.cache/
 /.pest*
