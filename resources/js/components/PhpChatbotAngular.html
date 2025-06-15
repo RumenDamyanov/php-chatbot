@@ -1,0 +1,61 @@
+<div id="php-chatbot-angular" style="position:fixed;bottom:24px;right:24px;width:340px;max-width:90vw;z-index:9999;font-family:sans-serif;box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+  <div (click)="toggle()" style="background:#222;color:#fff;padding:14px 16px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;">
+    <span style="font-size:1.3em;">💬</span> <span>Chat with us!</span>
+    <span style="margin-left:auto;font-size:1.1em;opacity:0.7;">{{ open ? '▼' : '▲' }}</span>
+  </div>
+  <div #body style="display:none;background:#fff;border:1px solid #ddd;border-top:none;padding:14px 12px 12px 12px;border-radius:0 0 8px 8px;max-height:400px;overflow-y:auto;font-size:1em;">
+    <div *ngFor="let msg of messages" [ngClass]="msg.role">
+      <span>{{ msg.content }}</span>
+    </div>
+  </div>
+  <form #form style="display:none;background:#f9f9f9;padding:10px 8px 8px 8px;border-radius:0 0 8px 8px;border-top:1px solid #eee;display:flex;gap:8px;align-items:center;" (ngSubmit)="send()">
+    <input [(ngModel)]="input" name="input" type="text" placeholder="Type your message..." style="flex:1;padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:1em;" autocomplete="off" />
+    <button type="submit" style="padding:8px 16px;border:none;background:#222;color:#fff;border-radius:4px;font-weight:600;">Send</button>
+  </form>
+</div>
+
+<script type="ts">
+import { Component, ViewChild, ElementRef } from '@angular/core';
+
+@Component({
+  selector: 'php-chatbot-angular',
+  templateUrl: './PhpChatbotAngular.html',
+  styleUrls: ['./PhpChatbotAngular.css']
+})
+export class PhpChatbotAngular {
+  open = false;
+  input = '';
+  messages: {role: string, content: string}[] = [];
+  @ViewChild('body') body!: ElementRef;
+  @ViewChild('form') form!: ElementRef;
+
+  toggle() {
+    this.open = !this.open;
+    this.body.nativeElement.style.display = this.open ? 'block' : 'none';
+    this.form.nativeElement.style.display = this.open ? 'flex' : 'none';
+  }
+
+  async send() {
+    if (!this.input.trim()) return;
+    this.messages.push({ role: 'user', content: this.input });
+    const userMsg = this.input;
+    this.input = '';
+    // Replace with your backend endpoint
+    const res = await fetch('/php-chatbot/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userMsg })
+    });
+    const data = await res.json();
+    this.messages.push({ role: 'bot', content: data.reply });
+    setTimeout(() => {
+      this.body.nativeElement.scrollTop = this.body.nativeElement.scrollHeight;
+    }, 0);
+  }
+}
+</script>
+
+<style>
+.php-chatbot-body .user span { background:#e0e0e0;padding:6px 12px;border-radius:16px;display:inline-block; }
+.php-chatbot-body .bot span { background:#f0f0ff;padding:6px 12px;border-radius:16px;display:inline-block; }
+</style>

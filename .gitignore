@@ -1,0 +1,33 @@
+# PHP Composer
+/vendor/
+/composer.lock
+/coverage.xml
+/.phpunit.result.cache
+/.phpunit/
+/coverage-html/
+/.env
+/.env.*
+/.DS_Store
+/node_modules/
+/.idea/
+/.vscode/
+/.cache/
+/.pest*
+*.log
+*.swp
+*.swo
+*.bak
+*.tmp
+*.out
+*.coverage
+*.phpunit.result.cache
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Test output
+/test-output/
+
+# Editor
+*.code-workspace

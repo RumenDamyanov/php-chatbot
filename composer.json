@@ -1,0 +1,51 @@
+{
+    "name": "rumenx/php-chatbot",
+    "description": "A modern, framework-agnostic PHP package for adding customizable, AI-powered chat popups to any web application. Includes adapters for Laravel and Symfony, supports multiple AI providers, and is easy to extend.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rumen Damyanov",
+            "email": "contact@rumenx.com"
+        }
+    ],
+    "homepage": "https://github.com/RumenDamyanov/php-chatbot",
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.0",
+        "phpstan/phpstan": "^1.10",
+        "squizlabs/php_codesniffer": "^3.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rumenx\\PhpChatbot\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Rumenx\\PhpChatbot\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest --coverage",
+        "analyze": "phpstan analyse src --level=6",
+        "style": "phpcs src --standard=PSR12 --extensions=php",
+        "style-fix": "phpcbf src --standard=PSR12 --extensions=php"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Rumenx\\PhpChatbot\\Adapters\\Laravel\\PhpChatbotServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

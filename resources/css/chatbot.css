@@ -1,0 +1,10 @@
+/* Minimal CSS for php-chatbot popup (for plain HTML/JS version) */
+#php-chatbot-popup { position:fixed; bottom:24px; right:24px; width:340px; max-width:90vw; z-index:9999; font-family:sans-serif; box-shadow:0 4px 24px rgba(0,0,0,0.12); }
+#php-chatbot-header { background:#222; color:#fff; padding:14px 16px; border-radius:8px 8px 0 0; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:8px; }
+#php-chatbot-header .php-chatbot-arrow { margin-left:auto; font-size:1.1em; opacity:0.7; }
+#php-chatbot-body { background:#fff; border:1px solid #ddd; border-top:none; padding:14px 12px 12px 12px; border-radius:0 0 8px 8px; max-height:400px; overflow-y:auto; font-size:1em; }
+#php-chatbot-form { background:#f9f9f9; padding:10px 8px 8px 8px; border-radius:0 0 8px 8px; border-top:1px solid #eee; display:flex; gap:8px; align-items:center; }
+#php-chatbot-input { flex:1; padding:8px 12px; border:1px solid #ccc; border-radius:4px; font-size:1em; }
+#php-chatbot-form button { padding:8px 16px; border:none; background:#222; color:#fff; border-radius:4px; font-weight:600; }
+.user span { background:#e0e0e0; padding:6px 12px; border-radius:16px; display:inline-block; }
+.bot span { background:#f0f0ff; padding:6px 12px; border-radius:16px; display:inline-block; }
