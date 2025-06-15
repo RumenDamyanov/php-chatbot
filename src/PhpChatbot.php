@@ -7,51 +7,64 @@ use Rumenx\PhpChatbot\Contracts\AiModelInterface;
 /**
  * Class PhpChatbot
  *
- * The main chatbot orchestrator. Handles user input, context merging and delegates response generation to the AI model.
+ * The main chatbot orchestrator. Handles user input, context merging and delegates
+ * response generation to the AI model.
  *
- * @package Rumenx\PhpChatbot
+ * This class is final to encourage extension via composition, not inheritance.
+ * For framework integration guidance, see README.md.
+ *
+ * @category AI
+ * @package  Rumenx\PhpChatbot
+ * @author   Rumen Damyanov <contact@rumenx.com>
+ * @license  MIT https://opensource.org/licenses/MIT
+ * @link     https://github.com/RumenDamyanov/php-chatbot
+ * @final
  */
-class PhpChatbot
+final class PhpChatbot
 {
     /**
-     * The AI model instance used for generating responses.
+     * The AI model implementation.
      *
      * @var AiModelInterface
      */
-    protected AiModelInterface $model;
+    private AiModelInterface $_model;
 
     /**
-     * Configuration array for chatbot behavior, model, prompts, etc.
+     * Default configuration for the chatbot.
      *
      * @var array<string, mixed>
      */
-    protected array $config;
+    private array $_config;
 
     /**
-     * PhpChatbot constructor.
+     * Constructor for PhpChatbot.
      *
-     * @param AiModelInterface $model  The AI model implementation.
+     * @param AiModelInterface     $model   The AI model implementation.
      * @param array<string, mixed> $config  Optional configuration for the chatbot.
      */
-    public function __construct(AiModelInterface $model, array $config = [])
-    {
-        $this->model = $model;
-        /** @var array<string, mixed> $config */
-        $this->config = $config;
+    public function __construct(
+        AiModelInterface $model,
+        array $config = []
+    ) {
+        $this->_model = $model;
+        $this->_config = $config;
     }
 
     /**
-     * Generate a chatbot reply for the given input and context.
+     * Get a response from the chatbot.
      *
-     * @param string $input  The user input message.
-     * @param array<string, mixed> $context  Optional runtime context (merged with config).
-     * @return string  The chatbot's reply.
+     * @param string               $input   The user input message.
+     * @param array<string, mixed> $context Optional runtime context (merged with
+     *                                      config).
+     *
+     * @return string The chatbot's reply.
      */
-    public function ask(string $input, array $context = []): string
-    {
-        /** @var array<string, mixed> $context */
-        $context = array_merge($this->config, $context);
-        return $this->model->getResponse($input, $context);
+    public function ask(
+        string $input,
+        array $context = []
+    ): string {
+        $context = array_merge($this->_config, $context);
+        return $this->_model->getResponse($input, $context);
     }
 
     /**
@@ -61,18 +74,19 @@ class PhpChatbot
      */
     public function getModel(): AiModelInterface
     {
-        return $this->model;
+        return $this->_model;
     }
 
     /**
      * Set a new AI model instance.
      *
      * @param AiModelInterface $model
+     *
      * @return void
      */
     public function setModel(AiModelInterface $model): void
     {
-        $this->model = $model;
+        $this->_model = $model;
     }
 
     /**
@@ -82,17 +96,18 @@ class PhpChatbot
      */
     public function getConfig(): array
     {
-        return $this->config;
+        return $this->_config;
     }
 
     /**
      * Set the chatbot configuration array.
      *
      * @param array<string, mixed> $config
+     *
      * @return void
      */
     public function setConfig(array $config): void
     {
-        $this->config = $config;
+        $this->_config = $config;
     }
 }
