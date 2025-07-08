@@ -20,12 +20,15 @@
 
 ## Supported AI Providers & Models
 
-- **OpenAI**: gpt-4.1, gpt-4o, gpt-4o-mini, gpt-3.5-turbo, etc.
-- **Anthropic**: Claude 3 Sonnet, 3.7, 4, etc.
-- **xAI**: Grok-1, Grok-1.5, etc.
-- **Google**: Gemini 1.5 Pro, Gemini 1.5 Flash, etc.
-- **Meta**: Llama 3 (8B, 70B), etc.
-- **Free model** (no API key required)
+| Provider   | Example Models / Notes                                 | API Key Required | Local/Remote |
+|------------|--------------------------------------------------------|------------------|--------------|
+| OpenAI     | gpt-4.1, gpt-4o, gpt-4o-mini, gpt-3.5-turbo, etc.      | Yes              | Remote       |
+| Anthropic  | Claude 3 Sonnet, 3.7, 4, etc.                          | Yes              | Remote       |
+| xAI        | Grok-1, Grok-1.5, etc.                                 | Yes              | Remote       |
+| Google     | Gemini 1.5 Pro, Gemini 1.5 Flash, etc.                 | Yes              | Remote       |
+| Meta       | Llama 3 (8B, 70B), etc.                                | Yes              | Remote       |
+| Ollama     | llama2, mistral, phi3, and any local Ollama model      | No (local) / Opt | Local/Remote |
+| Free model | Simple fallback, no API key required                   | No               | Local        |
 
 ## Installation
 
