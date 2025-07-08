@@ -1,6 +1,10 @@
 <?php
 
+namespace Rumenx\PhpChatbot\Adapters\Laravel;
+
 /**
+ * PhpChatbotServiceProviderStub
+ *
  * Stub for static analysis and non-Laravel environments.
  *
  * @category   ServiceProvider
@@ -10,10 +14,7 @@
  * @link       https://github.com/RumenDamyanov/php-chatbot
  * @phpversion 8.3
  */
-
-namespace Rumenx\PhpChatbot\Adapters\Laravel;
-
-class PhpChatbotServiceProvider
+class PhpChatbotServiceProviderStub
 {
     /**
      * Stub register method.
