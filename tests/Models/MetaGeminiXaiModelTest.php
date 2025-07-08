@@ -32,15 +32,39 @@ it('GeminiModel getResponse returns placeholder', function () {
     expect($response)->toContain('Google Gemini');
 });
 
-it('XaiModel getModel/setModel', function () {
-    $model = new XaiModel('dummy', 'grok-1');
-    expect($model->getModel())->toBe('grok-1');
-    $model->setModel('grok-1.5');
-    expect($model->getModel())->toBe('grok-1.5');
-});
+it(
+    'GeminiModel sendMessage returns placeholder',
+    function () {
+        $model = new GeminiModel('dummy', 'gemini-1.5-pro');
+        $response = $model->sendMessage('Hi!');
+        expect($response)->toContain('Google Gemini');
+    }
+);
 
-it('XaiModel getResponse returns placeholder', function () {
-    $model = new XaiModel('dummy', 'grok-1');
-    $response = $model->getResponse('Hi!');
-    expect($response)->toContain('xAI');
-});
+it(
+    'XaiModel getModel/setModel',
+    function () {
+        $model = new XaiModel('dummy', 'grok-1');
+        expect($model->getModel())->toBe('grok-1');
+        $model->setModel('grok-1.5');
+        expect($model->getModel())->toBe('grok-1.5');
+    }
+);
+
+it(
+    'XaiModel getResponse returns placeholder',
+    function () {
+        $model = new XaiModel('dummy', 'grok-1');
+        $response = $model->getResponse('Hi!');
+        expect($response)->toContain('xAI');
+    }
+);
+
+it(
+    'XaiModel sendMessage returns placeholder',
+    function () {
+        $model = new XaiModel('dummy', 'grok-1');
+        $response = $model->sendMessage('Hi!');
+        expect($response)->toContain('xAI');
+    }
+);

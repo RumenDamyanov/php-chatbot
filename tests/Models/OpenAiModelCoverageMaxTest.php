@@ -61,3 +61,17 @@ it('OpenAiModel logs exception with logger', function () {
     $model->getResponse('test', ['logger' => $logger]);
     expect($logger->logs)->not->toBeEmpty();
 });
+
+it(
+    'OpenAiModel returns error if cURL fails',
+    function () {
+        $model = new OpenAiModel(
+            'dummy',
+            'gpt-3.5-turbo',
+            'http://localhost:9999/invalid'
+        );
+        $response = $model->getResponse('test');
+        expect($response)->toContain('OpenAI');
+        expect($response)->toContain('Error:');
+    }
+);

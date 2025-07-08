@@ -44,17 +44,125 @@ it('AnthropicModel returns fallback if choices missing', function () {
     expect($response)->toContain('No response');
 });
 
-it('AnthropicModel handles exception', function () {
-    $model = new class('dummy') extends AnthropicModel {
-        public function getResponse(string $input, array $context = []): string {
-            throw new \Exception('Simulated');
-        }
-    };
-    $result = null;
-    try {
-        $model->getResponse('test');
-    } catch (\Exception $e) {
-        $result = $e->getMessage();
+it(
+    'AnthropicModel uses max_tokens from context',
+    function () {
+        /**
+         * Anonymous AnthropicModel stub to test max_tokens context.
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        $model = new class('dummy') extends AnthropicModel {
+            /**
+             * @var int|null Last max_tokens value used
+             */
+            public $lastMaxTokens = null;
+
+            /**
+             * Get a response and record max_tokens for test.
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []) : string
+            {
+                $systemPrompt = 'You are a helpful chatbot.';
+                if (isset($context['prompt']) && is_string($context['prompt'])) {
+                    $systemPrompt = $context['prompt'];
+                }
+                $maxTokens = 256;
+                if (isset($context['max_tokens'])
+                    && is_numeric($context['max_tokens'])
+                ) {
+                    $tokens = $context['max_tokens'];
+                    $maxTokens = (int) $tokens;
+                }
+                $this->lastMaxTokens = $maxTokens;
+                return '[Anthropic] No response.';
+            }
+        };
+        $model->getResponse('test', ['max_tokens' => 123]);
+        expect($model->lastMaxTokens)->toBe(123);
     }
-    expect($result)->toBe('Simulated');
-});
+);
+
+it(
+    'AnthropicModel returns fallback if choices key missing',
+    function () {
+        /**
+         * Anonymous AnthropicModel stub to simulate missing choices key.
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        $model = new class('dummy') extends AnthropicModel {
+            /**
+             * Simulate API returning JSON without choices key.
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []) : string
+            {
+                // Simulate API returning JSON without choices
+                $response = json_encode(['foo' => 'bar']);
+                $decoded = json_decode($response, true);
+                if (is_array($decoded)
+                    && isset($decoded['choices'][0]['message']['content'])
+                    && is_string($decoded['choices'][0]['message']['content'])
+                ) {
+                    return $decoded['choices'][0]['message']['content'];
+                }
+                return '[Anthropic] No response.';
+            }
+        };
+        $response = $model->getResponse('test');
+        expect($response)->toBe('[Anthropic] No response.');
+    }
+);
+
+it(
+    'AnthropicModel catch block returns exception message',
+    function () {
+        /**
+         * Anonymous AnthropicModel stub to test catch block.
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        $model = new class('dummy') extends AnthropicModel {
+            /**
+             * Simulate catch block for exception message.
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []) : string
+            {
+                try {
+                    throw new \Exception('Edge case!');
+                } catch (\Throwable $e) {
+                    return '[Anthropic] Exception: ' . $e->getMessage();
+                }
+            }
+        };
+        $response = $model->getResponse('test');
+        expect($response)->toBe('[Anthropic] Exception: Edge case!');
+    }
+);

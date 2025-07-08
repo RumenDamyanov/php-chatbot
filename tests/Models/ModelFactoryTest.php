@@ -68,3 +68,275 @@ it('ModelFactory throws on unknown model', function () {
     $config = ['model' => 'UnknownModelClass'];
     expect(fn() => ModelFactory::make($config))->toThrow(InvalidArgumentException::class);
 });
+
+it(
+    'ModelFactory throws on custom model not implementing interface',
+    function () {
+        /**
+         * Dummy class for test (does not implement AiModelInterface).
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        class NotAChatbot
+        {
+        }
+        expect(fn() => ModelFactory::make(['model' => NotAChatbot::class]))
+            ->toThrow(RuntimeException::class);
+    }
+);
+
+it(
+    'ModelFactory throws on custom model with required constructor argument',
+    function () {
+        /**
+         * Dummy class for test (implements AiModelInterface, but requires constructor arg).
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        class NeedsArg implements \Rumenx\PhpChatbot\Contracts\AiModelInterface
+        {
+            /**
+             * NeedsArg constructor.
+             *
+             * @param mixed $foo Required arg
+             */
+            public function __construct($foo)
+            {
+            }
+            /**
+             * Get a response (dummy).
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []): string
+            {
+                return 'x';
+            }
+        }
+        expect(fn() => ModelFactory::make(['model' => NeedsArg::class]))
+            ->toThrow(Error::class);
+    }
+);
+
+it(
+    'ModelFactory creates custom model implementing interface with optional constructor arg',
+    function () {
+        /**
+         * Dummy class for test (implements AiModelInterface, optional constructor arg).
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        class OptionalArgModel implements \Rumenx\PhpChatbot\Contracts\AiModelInterface
+        {
+            /**
+             * OptionalArgModel constructor.
+             *
+             * @param mixed|null $foo Optional arg
+             */
+            public function __construct($foo = null)
+            {
+            }
+            /**
+             * Get a response (dummy).
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []): string
+            {
+                return 'ok';
+            }
+        }
+        $config = ['model' => OptionalArgModel::class];
+        $model = ModelFactory::make($config);
+        expect($model)->toBeInstanceOf(OptionalArgModel::class);
+    }
+);
+
+it(
+    'ModelFactory throws if custom model constructor throws',
+    function () {
+        /**
+         * Dummy class for test (implements AiModelInterface, constructor throws).
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        class ThrowsInCtor implements \Rumenx\PhpChatbot\Contracts\AiModelInterface
+        {
+            /**
+             * ThrowsInCtor constructor.
+             */
+            public function __construct()
+            {
+                throw new RuntimeException('fail');
+            }
+            /**
+             * Get a response (dummy).
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []): string
+            {
+                return 'fail';
+            }
+        }
+        expect(fn() => ModelFactory::make(['model' => ThrowsInCtor::class]))
+            ->toThrow(RuntimeException::class);
+    }
+);
+
+it(
+    'ModelFactory throws on abstract model class',
+    function () {
+        /**
+         * Abstract class for test (implements AiModelInterface).
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        abstract class AbstractModel
+            implements \Rumenx\PhpChatbot\Contracts\AiModelInterface
+        {
+            /**
+             * Get a response (dummy).
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []) : string
+            {
+                return 'abstract';
+            }
+        }
+        expect(fn() => ModelFactory::make(['model' => AbstractModel::class]))
+            ->toThrow(Error::class);
+    }
+);
+
+it(
+    'ModelFactory throws on interface as model',
+    function () {
+        /**
+         * Interface for test (extends AiModelInterface).
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        interface InterfaceModel
+            extends \Rumenx\PhpChatbot\Contracts\AiModelInterface
+        {
+        }
+        expect(fn() => ModelFactory::make(['model' => InterfaceModel::class]))
+            ->toThrow(InvalidArgumentException::class);
+    }
+);
+
+it(
+    'ModelFactory throws on model with private constructor',
+    function () {
+        /**
+         * Dummy class for test (implements AiModelInterface, private constructor).
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        class PrivateCtorModel
+            implements \Rumenx\PhpChatbot\Contracts\AiModelInterface
+        {
+            /**
+             * Private constructor.
+             */
+            private function __construct()
+            {
+            }
+            /**
+             * Get a response (dummy).
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []) : string
+            {
+                return 'private';
+            }
+        }
+        expect(fn() => ModelFactory::make(['model' => PrivateCtorModel::class]))
+            ->toThrow(Error::class);
+    }
+);
+
+it(
+    'ModelFactory throws on final model with private constructor',
+    function () {
+        /**
+         * Dummy class for test (implements AiModelInterface, final, private constructor).
+         *
+         * @category Test
+         * @package  Rumenx\PhpChatbot
+         * @author   Rumen Damyanov <contact@rumenx.com>
+         * @license  MIT License (https://opensource.org/licenses/MIT)
+         * @link     https://github.com/RumenDamyanov/php-chatbot
+         */
+        final class FinalPrivateCtorModel
+            implements \Rumenx\PhpChatbot\Contracts\AiModelInterface
+        {
+            /**
+             * Private constructor.
+             */
+            private function __construct()
+            {
+            }
+            /**
+             * Get a response (dummy).
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []) : string
+            {
+                return 'final';
+            }
+        }
+        expect(fn() => ModelFactory::make(['model' => FinalPrivateCtorModel::class]))
+            ->toThrow(Error::class);
+    }
+);

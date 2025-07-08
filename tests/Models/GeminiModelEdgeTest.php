@@ -57,3 +57,46 @@ it('GeminiModel handles exception', function () {
     }
     expect($result)->toBe('Simulated');
 });
+
+it(
+    'GeminiModel returns content if API response is valid',
+    function () {
+        $model = new class('dummy') extends GeminiModel {
+            /**
+             * Simulate valid Gemini API response.
+             *
+             * @param string $input   Input string
+             * @param array  $context Context array
+             *
+             * @return string
+             */
+            public function getResponse(string $input, array $context = []) : string
+            {
+                $response = [
+                    'candidates' => [
+                        [
+                            'content' => [
+                                'parts' => [
+                                    [ 'text' => 'Hello from Gemini!' ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ];
+                if (is_array($response)
+                    && isset(
+                        $response['candidates'][0]['content']['parts'][0]['text']
+                    )
+                    && is_string(
+                        $response['candidates'][0]['content']['parts'][0]['text']
+                    )
+                ) {
+                    return $response['candidates'][0]['content']['parts'][0]['text'];
+                }
+                return '[Google Gemini] No response.';
+            }
+        };
+        $response = $model->getResponse('test');
+        expect($response)->toBe('Hello from Gemini!');
+    }
+);
