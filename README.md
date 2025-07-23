@@ -343,6 +343,46 @@ The provided CSS/SCSS and view files (`resources/css/`, `resources/views/`) are 
 - **Override or extend in your own codebase for all customizations.**
 - **Never edit vendor files directly.**
 
+## Configuration Best Practices
+
+**Never edit files in the `vendor/` directory.**
+
+- For Laravel: Publish the config file to your app's `config/` directory using:
+  ```sh
+  php artisan vendor:publish --provider="Rumenx\PhpChatbot\Adapters\Laravel\PhpChatbotServiceProvider"
+  ```
+  Then edit `config/phpchatbot.php` in your app. This file will not be overwritten by package updates.
+
+- For Symfony: Use the provided command to publish config to your app's config directory, then edit as needed.
+
+- For plain PHP or other frameworks: **Use an environment variable to point to your own config file.**
+
+  1. Copy `src/Config/phpchatbot.php` to a safe location in your project (e.g., `config/phpchatbot.php`).
+  2. Set the environment variable in your `.env` or server config:
+     ```env
+     PHPCHATBOT_CONFIG_PATH=/path/to/your/config/phpchatbot.php
+     ```
+  3. In your bootstrap or controller, load config like this:
+     ```php
+     $configPath = getenv('PHPCHATBOT_CONFIG_PATH') ?: __DIR__ . '/../vendor/rumenx/php-chatbot/src/Config/phpchatbot.php';
+     $config = require $configPath;
+     ```
+
+- **Always use environment variables for secrets and API keys.**
+- **Never edit or commit changes to files in `vendor/`.**
+- **Document your custom config location for your team.**
+
+**Example usage in a plain PHP project:**
+
+```php
+$configPath = getenv('PHPCHATBOT_CONFIG_PATH') ?: __DIR__ . '/../vendor/rumenx/php-chatbot/src/Config/phpchatbot.php';
+$config = require $configPath;
+$model = ModelFactory::make($config);
+$chatbot = new PhpChatbot($model, $config);
+```
+
+> This approach ensures your configuration is safe from being overwritten during package updates and is easy to manage in any deployment environment.
+
 ## Best Practices
 
 - Never edit files in `vendor/`
@@ -376,3 +416,52 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 MIT. See [LICENSE.md](LICENSE.md).
+
+## Chat Message Filtering Middleware
+
+The package includes a configurable chat message filtering middleware to help ensure safe, appropriate, and guideline-aligned AI responses. This middleware:
+
+- Filters and optionally rephrases user-submitted messages before they reach the AI model.
+- Appends hidden system instructions (not visible in chat history) to the AI context, enforcing safety and communication guidelines.
+- All filtering rules (profanities, aggression patterns, link regex) and system instructions are fully configurable in `src/Config/phpchatbot.php`.
+
+**Example configuration:**
+
+```php
+'message_filtering' => [
+    'instructions' => [
+        'Avoid sharing external links.',
+        'Refrain from quoting controversial sources.',
+        'Use appropriate language.',
+        'Reject harmful or dangerous requests.',
+        'De-escalate potential conflicts and calm aggressive or rude users.',
+    ],
+    'profanities' => ['badword1', 'badword2'],
+    'aggression_patterns' => ['hate', 'kill', 'stupid', 'idiot'],
+    'link_pattern' => '/https?:\/\/[\w\.-]+/i',
+],
+```
+
+**Example usage in your controller or chat service:**
+
+```php
+use Rumenx\PhpChatbot\Middleware\ChatMessageFilterMiddleware;
+
+$config = require 'src/Config/phpchatbot.php';
+$filterCfg = $config['message_filtering'] ?? [];
+$middleware = new ChatMessageFilterMiddleware(
+    $filterCfg['instructions'] ?? [],
+    $filterCfg['profanities'] ?? [],
+    $filterCfg['aggression_patterns'] ?? [],
+    $filterCfg['link_pattern'] ?? ''
+);
+
+// Before sending to the AI model:
+$filtered = $middleware->handle($userMessage, $context);
+$reply = $chatbot->ask($filtered['message'], $filtered['context']);
+```
+
+**Purpose:**
+- Promotes safe, respectful, and effective communication.
+- Prevents misuse, abuse, and unsafe outputs.
+- All rules are transparent and configurable—no hidden censorship or manipulation.

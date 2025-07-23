@@ -37,4 +37,16 @@ return [
         'model' => 'llama-3-70b', // Options: llama-3-8b, llama-3-70b, etc.
         'endpoint' => 'https://api.meta.ai/v1/chat/completions',
     ],
+    'message_filtering' => [
+        'instructions' => [
+            'Avoid sharing external links.',
+            'Refrain from quoting controversial sources.',
+            'Use appropriate language.',
+            'Reject harmful or dangerous requests.',
+            'De-escalate potential conflicts and calm aggressive or rude users.',
+        ],
+        'profanities' => ['badword1', 'badword2'],
+        'aggression_patterns' => ['hate', 'kill', 'stupid', 'idiot'],
+        'link_pattern' => '/https?:\/\/[\w\.-]+/i',
+    ],
 ];
