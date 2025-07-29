@@ -168,6 +168,32 @@ class ModelFactory
                     $endpoint = $meta['endpoint'];
                 }
                 return new MetaModel($apiKey, $model, $endpoint);
+            case DeepSeekAiModel::class:
+                // DeepSeek config array
+                $deepseek = [];
+                if (isset($config['deepseek']) && is_array($config['deepseek'])) {
+                    // DeepSeek config as array
+                    $deepseek = $config['deepseek'];
+                }
+                // DeepSeek API key
+                $apiKey = '';
+                if (isset($deepseek['api_key']) && is_string($deepseek['api_key'])) {
+                    // API key as string
+                    $apiKey = $deepseek['api_key'];
+                }
+                // DeepSeek model name
+                $model = 'deepseek-chat';
+                if (isset($deepseek['model']) && is_string($deepseek['model'])) {
+                    // Model name as string
+                    $model = $deepseek['model'];
+                }
+                // DeepSeek endpoint
+                $endpoint = 'https://api.deepseek.com/v1/chat/completions';
+                if (isset($deepseek['endpoint']) && is_string($deepseek['endpoint'])) {
+                    // Endpoint as string
+                    $endpoint = $deepseek['endpoint'];
+                }
+                return new DeepSeekAiModel($apiKey, $model, $endpoint);
             case DefaultAiModel::class:
                 return new DefaultAiModel();
             default:
