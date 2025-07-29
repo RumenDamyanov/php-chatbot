@@ -5,6 +5,8 @@
 ![Style](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/style.yml/badge.svg)
 [![codecov](https://codecov.io/gh/RumenDamyanov/php-chatbot/branch/master/graph/badge.svg)](https://codecov.io/gh/RumenDamyanov/php-chatbot)
 
+> 📖 **Documentation**: [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) · [Funding](FUNDING.md)
+
 **php-chatbot** is a modern, framework-agnostic PHP package for integrating an AI-powered chat popup into any web application. It features out-of-the-box support for Laravel and Symfony, a flexible model abstraction for using OpenAI, Anthropic, xAI, Google Gemini, Meta, and more, and is designed for easy customization and extension. Build your own UI or use the provided minimal frontend as a starting point. High test coverage, static analysis, and coding standards are included.
 
 ## Features
@@ -405,18 +407,6 @@ $chatbot = new PhpChatbot($model, $config);
 | Example .env           | `.env.example`                                   | Optional          |
 | Tests                  | `tests/`                                         | Optional          |
 
-## Questions & Support
-
-For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/RumenDamyanov/php-chatbot/issues) page.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## License
-
-MIT. See [LICENSE.md](LICENSE.md).
-
 ## Chat Message Filtering Middleware
 
 The package includes a configurable chat message filtering middleware to help ensure safe, appropriate, and guideline-aligned AI responses. This middleware:
@@ -465,3 +455,25 @@ $reply = $chatbot->ask($filtered['message'], $filtered['context']);
 - Promotes safe, respectful, and effective communication.
 - Prevents misuse, abuse, and unsafe outputs.
 - All rules are transparent and configurable—no hidden censorship or manipulation.
+
+## Questions & Support
+
+For questions, issues, or feature requests, please use the [GitHub Issues](https://github.com/RumenDamyanov/php-chatbot/issues) page.
+
+For security vulnerabilities, please see our [Security Policy](SECURITY.md).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
+
+## Support the Project
+
+If you find this project helpful, consider supporting its development. See [FUNDING.md](FUNDING.md) for ways to contribute.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes and releases.
+
+## License
+
+MIT. See [LICENSE.md](LICENSE.md).
