@@ -28,7 +28,6 @@ if (class_exists('Illuminate\\Support\\ServiceProvider')) {
      * @author   Rumen Damyanov <contact@rumenx.com>
      * @license  MIT License (https://opensource.org/licenses/MIT)
      * @link     https://github.com/RumenDamyanov/php-chatbot
-     * @property \Illuminate\Contracts\Foundation\Application $app
      */
     class PhpChatbotServiceProvider extends \Illuminate\Support\ServiceProvider
     {

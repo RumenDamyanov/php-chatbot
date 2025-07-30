@@ -90,11 +90,11 @@ class OllamaModel implements AiModelInterface
             $headers[] = 'Authorization: Bearer ' . $this->apiKey;
         }
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, (int)$this->timeout);
         $result = curl_exec($ch);
         $err = curl_error($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
