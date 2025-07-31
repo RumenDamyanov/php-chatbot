@@ -20,6 +20,33 @@
 - High test coverage (Pest)
 - Static analysis (phpstan) & coding standards (phpcs, Symfony style)
 
+## 📚 Documentation & Wiki
+
+Comprehensive documentation and guides are available in our [GitHub Wiki](https://github.com/RumenDamyanov/php-chatbot/wiki):
+
+### 🚀 Getting Started
+- **[Installation Guide](https://github.com/RumenDamyanov/php-chatbot/wiki/Installation-Guide)** - Step-by-step installation for all environments
+- **[Quick Start Guide](https://github.com/RumenDamyanov/php-chatbot/wiki/Quick-Start-Guide)** - Get up and running in minutes
+- **[Configuration](https://github.com/RumenDamyanov/php-chatbot/wiki/Configuration)** - Complete configuration reference
+
+### 🔧 Implementation Guides
+- **[Framework Integration](https://github.com/RumenDamyanov/php-chatbot/wiki/Framework-Integration)** - Laravel, Symfony, and plain PHP setup
+- **[Frontend Integration](https://github.com/RumenDamyanov/php-chatbot/wiki/Frontend-Integration)** - React, Vue, Angular components and examples
+- **[AI Models](https://github.com/RumenDamyanov/php-chatbot/wiki/AI-Models)** - Provider comparison and configuration
+
+### 📖 Examples & Best Practices
+- **[Examples](https://github.com/RumenDamyanov/php-chatbot/wiki/Examples)** - Real-world implementations and use cases
+- **[Best Practices](https://github.com/RumenDamyanov/php-chatbot/wiki/Best-Practices)** - Production deployment and security guidelines
+- **[Security & Filtering](https://github.com/RumenDamyanov/php-chatbot/wiki/Security-and-Filtering)** - Content filtering and abuse prevention
+
+### 🛠️ Development & Support
+- **[API Reference](https://github.com/RumenDamyanov/php-chatbot/wiki/API-Reference)** - Complete API documentation
+- **[Troubleshooting](https://github.com/RumenDamyanov/php-chatbot/wiki/Troubleshooting)** - Common issues and solutions
+- **[Contributing](https://github.com/RumenDamyanov/php-chatbot/wiki/Contributing)** - How to contribute to the project
+- **[FAQ](https://github.com/RumenDamyanov/php-chatbot/wiki/FAQ)** - Frequently asked questions
+
+> 💡 **Tip**: The wiki contains production-ready examples, troubleshooting guides, and comprehensive API documentation that goes beyond this README.
+
 ## Supported AI Providers & Models
 
 | Provider   | Example Models / Notes                                 | API Key Required | Local/Remote |
@@ -465,6 +492,10 @@ For security vulnerabilities, please see our [Security Policy](SECURITY.md).
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
+
+## Code of Conduct
+
+This project adheres to a Code of Conduct to ensure a welcoming and inclusive environment for all contributors. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for details.
 
 ## Support the Project
 
