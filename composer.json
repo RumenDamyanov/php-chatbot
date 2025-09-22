@@ -1,15 +1,28 @@
 {
     "name": "rumenx/php-chatbot",
     "description": "A modern, framework-agnostic PHP package for adding customizable, AI-powered chat popups to any web application. Includes adapters for Laravel and Symfony, supports multiple AI providers, and is easy to extend.",
+    "homepage": "https://github.com/RumenDamyanov/php-chatbot",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
             "name": "Rumen Damyanov",
-            "email": "contact@rumenx.com"
+            "email": "contact@rumenx.com",
+            "role": "Developer",
+            "homepage": "https://rumenx.com"
         }
     ],
-    "homepage": "https://github.com/RumenDamyanov/php-chatbot",
+    "support": {
+        "issues": "https://github.com/RumenDamyanov/php-chatbot/issues",
+        "source": "https://github.com/RumenDamyanov/php-chatbot",
+        "wiki": "https://github.com/RumenDamyanov/php-chatbot/wiki"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/RumenDamyanov"
+        }
+    ],
     "require": {
         "php": ">=8.3"
     },
