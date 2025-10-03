@@ -213,6 +213,26 @@ test('PhpChatbot askStream merges config with context', function () {
     expect($generator)->toBeInstanceOf(\Generator::class);
 });
 
+test('PhpChatbot askStream actually yields chunks from model', function () {
+    $mockClient = (new \Tests\Helpers\MockHttpClient())->setMockResponse(
+        "data: " . json_encode(['choices' => [['delta' => ['content' => 'Test']]]]) . "\n\n" .
+        "data: " . json_encode(['choices' => [['delta' => ['content' => ' chunk']]]]) . "\n\n" .
+        "data: [DONE]\n\n"
+    );
+    
+    $model = new OpenAiModel('test-key', 'gpt-4', 'https://api.openai.com/v1/chat/completions', $mockClient);
+    $chatbot = new PhpChatbot($model);
+    
+    $chunks = [];
+    foreach ($chatbot->askStream('Hello') as $chunk) {
+        $chunks[] = $chunk;
+    }
+    
+    expect($chunks)->toHaveCount(2)
+        ->and($chunks)->toContain('Test')
+        ->and($chunks)->toContain(' chunk');
+});
+
 test('StreamBuffer extracts content from complex OpenAI SSE with metadata', function () {
     $buffer = new StreamBuffer();
     
