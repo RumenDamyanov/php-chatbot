@@ -3,6 +3,7 @@
 namespace Rumenx\PhpChatbot\Models;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 /**
  * DeepSeek AI Model implementation for the PHP Chatbot package.
@@ -67,9 +68,9 @@ class DeepSeekAiModel implements AiModelInterface
      * @param string               $input   The user input.
      * @param array<string, mixed> $context Optional context for the request.
      *
-     * @return string The response from DeepSeek.
+     * @return ChatResponse The response from DeepSeek.
      */
-    public function getResponse(string $input, array $context = []): string
+    public function getResponse(string $input, array $context = []): ChatResponse
     {
         try {
             $systemPrompt = 'You are a helpful chatbot.';
@@ -127,12 +128,7 @@ class DeepSeekAiModel implements AiModelInterface
                     );
                 }
                 curl_close($ch);
-                return json_encode(
-                    [
-                        'status' => 'error',
-                        'message' => '[DeepSeek] Error: ' . $error,
-                    ]
-                ) ?: '{"status":"error","message":"[DeepSeek] JSON encode failed."}';
+                return ChatResponse::fromString('[DeepSeek] Error: ' . $error, $this->model);
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
@@ -141,7 +137,8 @@ class DeepSeekAiModel implements AiModelInterface
                 && isset($response['choices'][0]['message']['content'])
                 && is_string($response['choices'][0]['message']['content'])
             ) {
-                return $response['choices'][0]['message']['content'];
+                $content = $response['choices'][0]['message']['content'];
+                return ChatResponse::fromOpenAI($content, $response);
             }
             if (
                 isset($context['logger'])
@@ -152,12 +149,7 @@ class DeepSeekAiModel implements AiModelInterface
                     ['response' => $response]
                 );
             }
-            return json_encode(
-                [
-                    'status' => 'error',
-                    'message' => '[DeepSeek] No response.',
-                ]
-            ) ?: '{"status":"error","message":"[DeepSeek] JSON encode failed."}';
+            return ChatResponse::fromString('[DeepSeek] No response.', $this->model);
         } catch (\Throwable $e) {
             if (
                 isset($context['logger'])
@@ -168,12 +160,7 @@ class DeepSeekAiModel implements AiModelInterface
                     ['exception' => $e]
                 );
             }
-            return json_encode(
-                [
-                    'status' => 'error',
-                    'message' => '[DeepSeek] Exception: ' . $e->getMessage(),
-                ]
-            ) ?: '{"status":"error","message":"[DeepSeek] JSON encode failed."}';
+            return ChatResponse::fromString('[DeepSeek] Exception: ' . $e->getMessage(), $this->model);
         }
     }
 }

@@ -4,6 +4,9 @@ namespace Rumenx\PhpChatbot;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
 use Rumenx\PhpChatbot\Support\ConversationMemory;
+use Rumenx\PhpChatbot\Support\ChatResponse;
+use Rumenx\PhpChatbot\Support\TokenUsage;
+use Rumenx\PhpChatbot\Support\CostCalculator;
 
 /**
  * Class PhpChatbot
@@ -45,6 +48,20 @@ final class PhpChatbot
     protected $memory;
 
     /**
+     * The last ChatResponse received from the model.
+     *
+     * @var ChatResponse|null
+     */
+    protected $lastResponse;
+
+    /**
+     * Cost calculator for tracking API costs.
+     *
+     * @var CostCalculator
+     */
+    protected $costCalculator;
+
+    /**
      * Constructor for PhpChatbot.
      *
      * @param AiModelInterface     $model   The AI model implementation.
@@ -59,6 +76,8 @@ final class PhpChatbot
         $this->model = $model;
         $this->config = $config;
         $this->memory = $memory;
+        $this->lastResponse = null;
+        $this->costCalculator = new CostCalculator();
     }
 
     /**
@@ -68,7 +87,7 @@ final class PhpChatbot
      * @param array<string, mixed> $context Optional runtime context (merged with
      *                                      config).
      *
-     * @return string The chatbot's reply.
+     * @return string The chatbot's reply (automatically converted from ChatResponse).
      */
     public function ask(
         string $input,
@@ -92,12 +111,18 @@ final class PhpChatbot
 
         $response = $this->model->getResponse($input, $context);
 
+        // Store the ChatResponse for token tracking
+        $this->lastResponse = $response;
+
+        // Get the content as string
+        $responseContent = (string) $response;
+
         // Store assistant's response in memory
         if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
-            $this->memory->addMessage($sessionId, 'assistant', $response);
+            $this->memory->addMessage($sessionId, 'assistant', $responseContent);
         }
 
-        return $response;
+        return $responseContent;
     }
 
     /**
@@ -257,5 +282,111 @@ final class PhpChatbot
     public function setMemory(?ConversationMemory $memory): void
     {
         $this->memory = $memory;
+    }
+
+    /**
+     * Get the last ChatResponse received from the model.
+     *
+     * This provides access to the complete response including metadata,
+     * token usage, and other information.
+     *
+     * @return ChatResponse|null
+     */
+    public function getLastResponse(): ?ChatResponse
+    {
+        return $this->lastResponse;
+    }
+
+    /**
+     * Get token usage information from the last response.
+     *
+     * @return TokenUsage|null
+     */
+    public function getLastTokenUsage(): ?TokenUsage
+    {
+        return $this->lastResponse?->getTokenUsage();
+    }
+
+    /**
+     * Calculate the cost of the last API request.
+     *
+     * Returns null if no token usage information is available.
+     *
+     * @return float|null Cost in USD, or null if unavailable.
+     */
+    public function getLastCost(): ?float
+    {
+        $tokenUsage = $this->getLastTokenUsage();
+
+        if ($tokenUsage === null || $this->lastResponse === null) {
+            return null;
+        }
+
+        $model = $this->lastResponse->getModel();
+
+        return $this->costCalculator->calculate($tokenUsage, $model);
+    }
+
+    /**
+     * Get a formatted summary of the last response including token usage and cost.
+     *
+     * @return string|null Human-readable summary, or null if no response available.
+     */
+    public function getLastResponseSummary(): ?string
+    {
+        if ($this->lastResponse === null) {
+            return null;
+        }
+
+        $summary = $this->lastResponse->getSummary();
+        $cost = $this->getLastCost();
+
+        if ($cost !== null) {
+            $formattedCost = $this->costCalculator->formatCost($cost);
+            $summary .= " | Cost: {$formattedCost}";
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Get the cost calculator instance.
+     *
+     * @return CostCalculator
+     */
+    public function getCostCalculator(): CostCalculator
+    {
+        return $this->costCalculator;
+    }
+
+    /**
+     * Estimate the cost for a given number of tokens.
+     *
+     * This is useful for budgeting before making an API call.
+     *
+     * @param int    $promptTokens     Estimated input tokens.
+     * @param int    $completionTokens Estimated output tokens.
+     * @param string|null $model       Model name (uses current model if not provided).
+     *
+     * @return float Estimated cost in USD.
+     */
+    public function estimateCost(
+        int $promptTokens,
+        int $completionTokens,
+        ?string $model = null
+    ): float {
+        if ($model === null) {
+            if (method_exists($this->model, 'getModel')) {
+                $model = $this->model->getModel();
+            } else {
+                $model = 'unknown';
+            }
+        }
+
+        return $this->costCalculator->estimate(
+            $promptTokens,
+            $completionTokens,
+            $model
+        );
     }
 }

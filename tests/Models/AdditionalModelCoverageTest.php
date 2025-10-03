@@ -6,6 +6,7 @@ use Rumenx\PhpChatbot\Models\GeminiModel;
 use Rumenx\PhpChatbot\Models\MetaModel;
 use Rumenx\PhpChatbot\Models\OpenAiModel;
 use Rumenx\PhpChatbot\Models\XaiModel;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 describe(
     'Additional Model Coverage Tests',
@@ -24,7 +25,8 @@ describe(
 
                 $result = $model->getResponse('test message', $context);
 
-                expect($result)->toBeString();
+                expect($result)->toBeInstanceOf(ChatResponse::class);
+                expect((string) $result)->toBeString();
             }
         );
 
@@ -40,7 +42,8 @@ describe(
 
                 $result = $model->getResponse('test message', $context);
 
-                expect($result)->toBeString();
+                expect($result)->toBeInstanceOf(ChatResponse::class);
+                expect((string) $result)->toBeString();
             }
         );
 
@@ -56,7 +59,8 @@ describe(
 
                 $result = $model->getResponse('test message', $context);
 
-                expect($result)->toBeString();
+                expect($result)->toBeInstanceOf(ChatResponse::class);
+                expect((string) $result)->toBeString();
             }
         );
 
@@ -72,7 +76,8 @@ describe(
 
                 $result = $model->getResponse('test message', $context);
 
-                expect($result)->toBeString();
+                expect($result)->toBeInstanceOf(ChatResponse::class);
+                expect((string) $result)->toBeString();
             }
         );
 
@@ -88,7 +93,8 @@ describe(
 
                 $result = $model->getResponse('test message', $context);
 
-                expect($result)->toBeString();
+                expect($result)->toBeInstanceOf(ChatResponse::class);
+                expect((string) $result)->toBeString();
             }
         );
 
@@ -104,7 +110,8 @@ describe(
 
                 $result = $model->getResponse('test message', $context);
 
-                expect($result)->toBeString();
+                expect($result)->toBeInstanceOf(ChatResponse::class);
+                expect((string) $result)->toBeString();
             }
         );
 
@@ -120,7 +127,8 @@ describe(
 
                 $result = $model->getResponse('test message', $context);
 
-                expect($result)->toBeString();
+                expect($result)->toBeInstanceOf(ChatResponse::class);
+                expect((string) $result)->toBeString();
             }
         );
 
@@ -136,7 +144,8 @@ describe(
 
                 $result = $model->getResponse('test message', $context);
 
-                expect($result)->toBeString();
+                expect($result)->toBeInstanceOf(ChatResponse::class);
+                expect((string) $result)->toBeString();
             }
         );
     }

@@ -3,6 +3,7 @@
 namespace Rumenx\PhpChatbot\Models;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 /**
  * Default AI Model implementation for the php-chatbot package.
@@ -18,14 +19,21 @@ use Rumenx\PhpChatbot\Contracts\AiModelInterface;
 class DefaultAiModel implements AiModelInterface
 {
     /**
+     * The model name.
+     *
+     * @var string
+     */
+    protected string $model = 'default-ai';
+
+    /**
      * Get a response from the Default AI model.
      *
      * @param string               $input   The user input.
      * @param array<string, mixed> $context Optional context for the request.
      *
-     * @return string The response from the Default AI model.
+     * @return ChatResponse The response from the Default AI model.
      */
-    public function getResponse(string $input, array $context = []): string
+    public function getResponse(string $input, array $context = []): ChatResponse
     {
         $prompt = isset($context['prompt']) && is_string($context['prompt'])
             ? $context['prompt']
@@ -37,9 +45,33 @@ class DefaultAiModel implements AiModelInterface
             ? 'Previous conversation: '
                 . implode(' ', array_map('strval', $context['history']))
             : '';
-        return "[DefaultAI-$lang] $prompt\n"
+        $content = "[DefaultAI-$lang] $prompt\n"
             . "$userContext\n"
             . "User: $input\n"
             . "Bot: This is a default AI response.";
+
+        return ChatResponse::fromString($content, $this->model);
+    }
+
+    /**
+     * Get the model name.
+     *
+     * @return string The model name.
+     */
+    public function getModel(): string
+    {
+        return $this->model;
+    }
+
+    /**
+     * Set the model name.
+     *
+     * @param string $model The model name.
+     *
+     * @return void
+     */
+    public function setModel(string $model): void
+    {
+        $this->model = $model;
     }
 }

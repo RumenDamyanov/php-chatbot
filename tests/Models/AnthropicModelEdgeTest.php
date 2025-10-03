@@ -3,16 +3,17 @@
 declare(strict_types=1);
 
 use Rumenx\PhpChatbot\Models\AnthropicModel;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 it('AnthropicModel returns default prompt if context missing', function () {
     $model = new AnthropicModel('dummy');
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('No response');
 });
 
 it('AnthropicModel uses custom prompt and temperature', function () {
     $model = new AnthropicModel('dummy');
-    $response = $model->getResponse('test', [
+    $response = (string) $model->getResponse('test', [
         'prompt' => 'Custom!',
         'temperature' => 0.1,
     ]);
@@ -21,7 +22,7 @@ it('AnthropicModel uses custom prompt and temperature', function () {
 
 it('AnthropicModel handles non-string prompt', function () {
     $model = new AnthropicModel('dummy');
-    $response = $model->getResponse('test', [
+    $response = (string) $model->getResponse('test', [
         'prompt' => 123,
     ]);
     expect($response)->toContain('No response');
@@ -29,18 +30,18 @@ it('AnthropicModel handles non-string prompt', function () {
 
 it('AnthropicModel handles cURL error gracefully', function () {
     $model = new AnthropicModel('dummy', 'claude-3-sonnet', 'http://localhost:9999/invalid');
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('Anthropic');
 });
 
 it('AnthropicModel returns fallback if choices missing', function () {
     $model = new class('dummy') extends AnthropicModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): ChatResponse {
             // Simulate missing choices
-            return '[Anthropic] No response.';
+            return ChatResponse::fromString('[Anthropic] No response.', 'claude-test');
         }
     };
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('No response');
 });
 
@@ -68,9 +69,9 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []): ChatResponse
             {
                 $systemPrompt = 'You are a helpful chatbot.';
                 if (isset($context['prompt']) && is_string($context['prompt'])) {
@@ -84,7 +85,7 @@ it(
                     $maxTokens = (int) $tokens;
                 }
                 $this->lastMaxTokens = $maxTokens;
-                return '[Anthropic] No response.';
+                return ChatResponse::fromString('[Anthropic] No response.', 'claude-test');
             }
         };
         $model->getResponse('test', ['max_tokens' => 123]);
@@ -111,9 +112,9 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []): ChatResponse
             {
                 // Simulate API returning JSON without choices
                 $response = json_encode(['foo' => 'bar']);
@@ -122,12 +123,12 @@ it(
                     && isset($decoded['choices'][0]['message']['content'])
                     && is_string($decoded['choices'][0]['message']['content'])
                 ) {
-                    return $decoded['choices'][0]['message']['content'];
+                    return ChatResponse::fromString($decoded['choices'][0]['message']['content'], 'claude-test');
                 }
-                return '[Anthropic] No response.';
+                return ChatResponse::fromString('[Anthropic] No response.', 'claude-test');
             }
         };
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toBe('[Anthropic] No response.');
     }
 );
@@ -151,18 +152,18 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []): ChatResponse
             {
                 try {
                     throw new \Exception('Edge case!');
                 } catch (\Throwable $e) {
-                    return '[Anthropic] Exception: ' . $e->getMessage();
+                    return ChatResponse::fromString('[Anthropic] Exception: ' . $e->getMessage(), 'claude-test');
                 }
             }
         };
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toBe('[Anthropic] Exception: Edge case!');
     }
 );

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Rumenx\PhpChatbot\Support\ChatResponse;
+
 use Rumenx\PhpChatbot\Models\OllamaModel;
 
 it(
@@ -86,7 +88,7 @@ it(
              *
              * @return string
              */
-            public function getResponse(string $input, array $context = []): string
+            public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse
             {
                 $result = '{"not_response": "fail"}';
                 $json = json_decode($result, true);

@@ -6,6 +6,7 @@ use Rumenx\PhpChatbot\Contracts\AiModelInterface;
 use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
 use Rumenx\PhpChatbot\Support\HttpClientInterface;
 use Rumenx\PhpChatbot\Support\CurlHttpClient;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 /**
  * OpenAI Model implementation for the php-chatbot package.
@@ -74,9 +75,9 @@ class OpenAiModel implements StreamableModelInterface
      * @param string               $input   The user input.
      * @param array<string, mixed> $context Optional context for the request.
      *
-     * @return string The response from OpenAI.
+     * @return ChatResponse The response from OpenAI.
      */
-    public function getResponse(string $input, array $context = []): string
+    public function getResponse(string $input, array $context = []): ChatResponse
     {
         try {
             $systemPrompt = 'You are a helpful chatbot.';
@@ -134,7 +135,7 @@ class OpenAiModel implements StreamableModelInterface
                     );
                 }
                 curl_close($ch);
-                return '[OpenAI] Error: ' . $error;
+                return ChatResponse::fromString('[OpenAI] Error: ' . $error, $this->model);
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
@@ -143,7 +144,8 @@ class OpenAiModel implements StreamableModelInterface
                 && isset($response['choices'][0]['message']['content'])
                 && is_string($response['choices'][0]['message']['content'])
             ) {
-                return $response['choices'][0]['message']['content'];
+                $content = $response['choices'][0]['message']['content'];
+                return ChatResponse::fromOpenAI($content, $response);
             }
             if (
                 isset($context['logger'])
@@ -154,7 +156,7 @@ class OpenAiModel implements StreamableModelInterface
                     ['response' => $response]
                 );
             }
-            return '[OpenAI] No response.';
+            return ChatResponse::fromString('[OpenAI] No response.', $this->model);
         } catch (\Throwable $e) {
             if (
                 isset($context['logger'])
@@ -165,7 +167,7 @@ class OpenAiModel implements StreamableModelInterface
                     ['exception' => $e]
                 );
             }
-            return '[OpenAI] Exception: ' . $e->getMessage();
+            return ChatResponse::fromString('[OpenAI] Exception: ' . $e->getMessage(), $this->model);
         }
     }
 

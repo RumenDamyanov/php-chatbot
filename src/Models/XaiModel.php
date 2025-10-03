@@ -5,6 +5,7 @@ namespace Rumenx\PhpChatbot\Models;
 use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
 use Rumenx\PhpChatbot\Support\HttpClientInterface;
 use Rumenx\PhpChatbot\Support\CurlHttpClient;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 /**
  * XAI Model implementation for the php-chatbot package.
@@ -93,9 +94,9 @@ class XaiModel implements StreamableModelInterface
      * @param string               $input   The user input.
      * @param array<string, mixed> $context Optional context for the request.
      *
-     * @return string              The response from xAI.
+     * @return ChatResponse        The response from xAI.
      */
-    public function getResponse(string $input, array $context = []): string
+    public function getResponse(string $input, array $context = []): ChatResponse
     {
         try {
             $systemPrompt = 'You are a helpful chatbot.';
@@ -147,7 +148,7 @@ class XaiModel implements StreamableModelInterface
             if ($result === false) {
                 $error = curl_error($ch);
                 curl_close($ch);
-                return '[xAI] Error: ' . $error;
+                return ChatResponse::fromString('[xAI] Error: ' . $error, $this->model);
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
@@ -156,12 +157,13 @@ class XaiModel implements StreamableModelInterface
                 && isset($response['choices'][0]['message']['content'])
                 && is_string($response['choices'][0]['message']['content'])
             ) {
-                return $response['choices'][0]['message']['content'];
+                $content = $response['choices'][0]['message']['content'];
+                return ChatResponse::fromOpenAI($content, $response);
             }
             // Fallback for missing choices/content
-            return '[xAI] No response.';
+            return ChatResponse::fromString('[xAI] No response.', $this->model);
         } catch (\Throwable $e) {
-            return '[xAI] Exception: ' . $e->getMessage();
+            return ChatResponse::fromString('[xAI] Exception: ' . $e->getMessage(), $this->model);
         }
     }
 

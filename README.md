@@ -32,6 +32,7 @@ If you find **php-chatbot** useful, you might also be interested in these relate
 ## Features
 
 - Plug-and-play chat popup UI (minimal frontend dependencies)
+- **Token & Cost Tracking** - Monitor API usage and optimize costs with detailed token analytics
 - **Conversation Memory** - Persistent context across messages with file/Redis/database storage
 - **Streaming Responses** - Real-time token-by-token output for better UX
 - Laravel & Symfony support via adapters/service providers
@@ -55,6 +56,7 @@ Comprehensive documentation and guides are available in our [GitHub Wiki](https:
 - **[Framework Integration](https://github.com/RumenDamyanov/php-chatbot/wiki/Framework-Integration)** - Laravel, Symfony, and plain PHP setup
 - **[Frontend Integration](https://github.com/RumenDamyanov/php-chatbot/wiki/Frontend-Integration)** - React, Vue, Angular components and examples
 - **[AI Models](https://github.com/RumenDamyanov/php-chatbot/wiki/AI-Models)** - Provider comparison and configuration
+- **[Token & Cost Tracking](https://github.com/RumenDamyanov/php-chatbot/wiki/Token-Tracking)** - Monitor API usage, track costs, and optimize spending
 - **[Conversation Memory](https://github.com/RumenDamyanov/php-chatbot/wiki/Conversation-Memory)** - Persistent context with file/Redis/database storage
 
 ### 📖 Examples & Best Practices
@@ -126,6 +128,36 @@ $chatbot = new PhpChatbot($model, $config);
 $reply = $chatbot->ask('Hello!');
 echo $reply;
 ```
+
+### Token & Cost Tracking
+
+Monitor API usage and optimize costs with built-in token tracking:
+
+```php
+use Rumenx\PhpChatbot\PhpChatbot;
+use Rumenx\PhpChatbot\Models\OpenAiModel;
+
+$model = new OpenAiModel('your-api-key', 'gpt-4o');
+$chatbot = new PhpChatbot($model);
+
+// Make a request
+$response = $chatbot->ask('Explain quantum computing');
+echo $response;
+
+// Track token usage
+$usage = $chatbot->getLastTokenUsage();
+echo "Tokens used: {$usage->totalTokens}\n";
+
+// Calculate cost
+$cost = $chatbot->getLastCost();
+echo "Cost: $" . number_format($cost, 4) . "\n";
+
+// Estimate cost before making a request
+$estimatedCost = $chatbot->estimateCost('This is my prompt');
+echo "Estimated: $" . number_format($estimatedCost, 6) . "\n";
+```
+
+See the **[Token & Cost Tracking Guide](https://github.com/RumenDamyanov/php-chatbot/wiki/Token-Tracking)** for budget management, cost optimization tips, and provider comparison.
 
 ## Streaming Responses
 

@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
+use Rumenx\PhpChatbot\Support\ChatResponse;
+
 use Rumenx\PhpChatbot\Models\MetaModel;
 
 it('MetaModel returns default prompt if context missing', function () {
     $model = new MetaModel('dummy');
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('Error:');
 });
 
 it('MetaModel uses custom prompt', function () {
     $model = new MetaModel('dummy');
-    $response = $model->getResponse('test', [
+    $response = (string) $model->getResponse('test', [
         'prompt' => 'Custom!',
     ]);
     expect($response)->toContain('Error:');
@@ -20,7 +22,7 @@ it('MetaModel uses custom prompt', function () {
 
 it('MetaModel handles non-string prompt', function () {
     $model = new MetaModel('dummy');
-    $response = $model->getResponse('test', [
+    $response = (string) $model->getResponse('test', [
         'prompt' => 123,
     ]);
     expect($response)->toContain('Error:');
@@ -28,24 +30,24 @@ it('MetaModel handles non-string prompt', function () {
 
 it('MetaModel handles cURL error gracefully', function () {
     $model = new MetaModel('dummy', 'llama-3-70b', 'http://localhost:9999/invalid');
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('Meta');
 });
 
 it('MetaModel returns fallback if choices missing', function () {
     $model = new class('dummy') extends MetaModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             // Simulate missing choices
-            return '[Meta] No response.';
+            return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[Meta] No response.', 'llama-3-70b');
         }
     };
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('No response');
 });
 
 it('MetaModel handles exception', function () {
     $model = new class('dummy') extends MetaModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             throw new \Exception('Simulated');
         }
     };
@@ -74,9 +76,9 @@ it(
              * @param string $input   The input string.
              * @param array  $context The context array.
              *
-             * @return string
+             * @return \Rumenx\PhpChatbot\Support\ChatResponse
              */
-            public function getResponse(string $input, array $context = []): string
+            public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse
             {
                 $tokens = 128;
                 $temperature = 0.7;
@@ -94,7 +96,7 @@ it(
                     'max_tokens' => $tokens,
                     'temperature' => $temperature,
                 ];
-                return '[Meta] No response.';
+                return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[Meta] No response.', 'llama-3-70b');
             }
         };
         $response = $model->getResponse(
@@ -119,9 +121,9 @@ it(
              * @param string $input   The input string.
              * @param array  $context The context array.
              *
-             * @return string
+             * @return \Rumenx\PhpChatbot\Support\ChatResponse
              */
-            public function getResponse(string $input, array $context = []): string
+            public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse
             {
                 $response = [
                     'choices' => [
@@ -136,12 +138,12 @@ it(
                     && isset($response['choices'][0]['message']['content'])
                     && is_string($response['choices'][0]['message']['content'])
                 ) {
-                    return $response['choices'][0]['message']['content'];
+                    return \Rumenx\PhpChatbot\Support\ChatResponse::fromString($response['choices'][0]['message']['content'], 'llama-3-70b');
                 }
-                return '[Meta] No response.';
+                return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[Meta] No response.', 'llama-3-70b');
             }
         };
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toBe('Hello from Meta!');
     }
 );
@@ -155,7 +157,7 @@ it(
             'http://localhost:9999/invalid'
         );
         // Patch curl_exec to simulate failure by using an invalid endpoint
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toContain('Meta');
         expect($response)->toContain('Error:');
     }
@@ -171,18 +173,18 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return \Rumenx\PhpChatbot\Support\ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse
             {
                 try {
                     throw new \Exception('Edge case!');
                 } catch (\Throwable $e) {
-                    return '[Meta] Exception: ' . $e->getMessage();
+                    return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[Meta] Exception: ' . $e->getMessage(), 'llama-3-70b');
                 }
             }
         };
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toBe('[Meta] Exception: Edge case!');
     }
 );
@@ -197,9 +199,9 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return \Rumenx\PhpChatbot\Support\ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse
             {
                 $response = json_encode(['foo' => 'bar']);
                 $decoded = json_decode($response, true);
@@ -207,12 +209,12 @@ it(
                     && isset($decoded['choices'][0]['message']['content'])
                     && is_string($decoded['choices'][0]['message']['content'])
                 ) {
-                    return $decoded['choices'][0]['message']['content'];
+                    return \Rumenx\PhpChatbot\Support\ChatResponse::fromString($decoded['choices'][0]['message']['content'], 'llama-3-70b');
                 }
-                return '[Meta] No response.';
+                return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[Meta] No response.', 'llama-3-70b');
             }
         };
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toBe('[Meta] No response.');
     }
 );

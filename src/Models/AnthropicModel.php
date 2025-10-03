@@ -17,6 +17,7 @@ namespace Rumenx\PhpChatbot\Models;
 use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
 use Rumenx\PhpChatbot\Support\HttpClientInterface;
 use Rumenx\PhpChatbot\Support\CurlHttpClient;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 class AnthropicModel implements StreamableModelInterface
 {
@@ -96,9 +97,9 @@ class AnthropicModel implements StreamableModelInterface
      * @param string               $input   The user input.
      * @param array<string, mixed> $context Optional context for the request.
      *
-     * @return string The response from Claude.
+     * @return ChatResponse The response from Claude.
      */
-    public function getResponse(string $input, array $context = []): string
+    public function getResponse(string $input, array $context = []): ChatResponse
     {
         try {
             $systemPrompt = 'You are a helpful chatbot.';
@@ -146,20 +147,21 @@ class AnthropicModel implements StreamableModelInterface
             if ($result === false) {
                 $error = curl_error($ch);
                 curl_close($ch);
-                return '[Anthropic] Error: ' . $error;
+                return ChatResponse::fromString('[Anthropic] Error: ' . $error, $this->model);
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
             if (
                 is_array($response)
-                && isset($response['choices'][0]['message']['content'])
-                && is_string($response['choices'][0]['message']['content'])
+                && isset($response['content'][0]['text'])
+                && is_string($response['content'][0]['text'])
             ) {
-                return $response['choices'][0]['message']['content'];
+                $content = $response['content'][0]['text'];
+                return ChatResponse::fromAnthropic($content, $response);
             }
-            return '[Anthropic] No response.';
+            return ChatResponse::fromString('[Anthropic] No response.', $this->model);
         } catch (\Throwable $e) {
-            return '[Anthropic] Exception: ' . $e->getMessage();
+            return ChatResponse::fromString('[Anthropic] Exception: ' . $e->getMessage(), $this->model);
         }
     }
 

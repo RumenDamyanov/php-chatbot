@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 use Rumenx\PhpChatbot\PhpChatbot;
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 class DummyModel implements AiModelInterface {
     public array $calls = [];
-    public function getResponse(string $input, array $context = []): string {
+    public function getResponse(string $input, array $context = []): ChatResponse {
         $this->calls[] = [$input, $context];
         if (isset($context['throw'])) {
             throw new \RuntimeException('Dummy error');
         }
-        return 'dummy:' . $input;
+        return ChatResponse::fromString('dummy:' . $input, 'dummy-model');
     }
 }
 

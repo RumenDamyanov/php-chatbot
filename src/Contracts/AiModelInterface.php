@@ -2,6 +2,8 @@
 
 namespace Rumenx\PhpChatbot\Contracts;
 
+use Rumenx\PhpChatbot\Support\ChatResponse;
+
 interface AiModelInterface
 {
     /**
@@ -9,7 +11,7 @@ interface AiModelInterface
      *
      * @param string $input
      * @param array<string, mixed> $context
-     * @return string
+     * @return ChatResponse
      */
-    public function getResponse(string $input, array $context = []): string;
+    public function getResponse(string $input, array $context = []): ChatResponse;
 }

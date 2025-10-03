@@ -2,22 +2,25 @@
 
 declare(strict_types=1);
 
+use Rumenx\PhpChatbot\Support\ChatResponse;
+
 use Rumenx\PhpChatbot\Models\OpenAiModel;
 
 it('OpenAiModel returns error on curl failure', function () {
     $model = new OpenAiModel('invalid-key', 'gpt-3.5-turbo', 'http://localhost:9999/invalid'); // Unreachable endpoint
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('OpenAI');
 });
 
 it('OpenAiModel returns fallback on missing choices', function () {
     $model = new class('dummy', 'gpt-3.5-turbo') extends OpenAiModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             // Simulate OpenAiModel fallback logic
-            return json_encode(['status' => 'error', 'message' => '[OpenAI] No response.']);
+            $content = json_encode(['status' => 'error', 'message' => '[OpenAI] No response.']);
+            return ChatResponse::fromString($content, 'gpt-3.5-turbo');
         }
     };
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('No response');
 });
 
@@ -29,14 +32,15 @@ it('OpenAiModel logs exception if logger provided', function () {
         }
     };
     $model = new class('dummy', 'gpt-3.5-turbo') extends OpenAiModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             try {
                 throw new \Exception('Simulated');
             } catch (\Throwable $e) {
                 if (isset($context['logger']) && $context['logger'] instanceof \Psr\Log\LoggerInterface) {
                     $context['logger']->error('OpenAiModel exception: ' . $e->getMessage(), ['exception' => $e]);
                 }
-                return json_encode(['status' => 'error', 'message' => '[OpenAI] Exception: ' . $e->getMessage()]);
+                $content = json_encode(['status' => 'error', 'message' => '[OpenAI] Exception: ' . $e->getMessage()]);
+                return ChatResponse::fromString($content, 'gpt-3.5-turbo');
             }
         }
     };
@@ -60,9 +64,9 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return \Rumenx\PhpChatbot\Support\ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse
             {
                 $response = [
                     'choices' => [
@@ -77,12 +81,12 @@ it(
                     && isset($response['choices'][0]['message']['content'])
                     && is_string($response['choices'][0]['message']['content'])
                 ) {
-                    return $response['choices'][0]['message']['content'];
+                    return \Rumenx\PhpChatbot\Support\ChatResponse::fromString($response['choices'][0]['message']['content'], 'gpt-3.5-turbo');
                 }
-                return '[OpenAI] No response.';
+                return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[OpenAI] No response.', 'gpt-3.5-turbo');
             }
         };
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toBe('Hello from OpenAI!');
     }
 );
@@ -98,9 +102,9 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return \Rumenx\PhpChatbot\Support\ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse
             {
                 $maxTokens = 256;
                 $temperature = 0.7;
@@ -118,7 +122,7 @@ it(
                     'max_tokens' => $maxTokens,
                     'temperature' => $temperature,
                 ];
-                return '[OpenAI] No response.';
+                return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[OpenAI] No response.', 'gpt-3.5-turbo');
             }
         };
         $model->getResponse('test', ['max_tokens' => 123, 'temperature' => 0.9]);

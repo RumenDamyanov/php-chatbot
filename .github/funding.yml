@@ -1,0 +1,4 @@
+# These are supported funding model platforms
+
+github: RumenDamyanov
+custom: ["https://github.com/sponsors/RumenDamyanov"]
