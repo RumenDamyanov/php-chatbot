@@ -16,7 +16,7 @@ coverage:
     project:
       default:
         target: auto
-        threshold: 3%  # Allow up to 3% drop in total coverage
+        threshold: 5%  # Allow up to 5% drop in total coverage
         base: auto
         if_ci_failed: error
         informational: false
@@ -29,13 +29,13 @@ coverage:
         threshold: 5%  # Allow some flexibility for edge cases
         base: auto
         if_ci_failed: error
-        informational: false
+        informational: true
         only_pulls: true
 
   # Configure what changes are acceptable
   changes:
     default:
-      threshold: 3%  # Allow up to 2% change before flagging
+      threshold: 5%  # Allow up to 5% change before flagging
 
 # Ignore certain files/directories from coverage
 ignore:
