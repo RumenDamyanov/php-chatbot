@@ -14,6 +14,6 @@ it('AnthropicModel getModel/setModel', function () {
 
 it('MetaModel getResponse returns placeholder', function () {
     $model = new MetaModel('dummy', 'llama-3-8b');
-    $response = $model->getResponse('Hi!');
+    $response = (string) $model->getResponse('Hi!');
     expect($response)->toContain('Meta');
 });

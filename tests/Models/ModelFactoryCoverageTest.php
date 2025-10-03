@@ -9,10 +9,11 @@ use Rumenx\PhpChatbot\Models\XaiModel;
 use Rumenx\PhpChatbot\Models\GeminiModel;
 use Rumenx\PhpChatbot\Models\MetaModel;
 use Rumenx\PhpChatbot\Models\DefaultAiModel;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 class CustomModel implements \Rumenx\PhpChatbot\Contracts\AiModelInterface {
-    public function getResponse(string $input, array $context = []): string {
-        return 'custom';
+    public function getResponse(string $input, array $context = []): ChatResponse {
+        return ChatResponse::fromString('custom', 'custom-model');
     }
 }
 

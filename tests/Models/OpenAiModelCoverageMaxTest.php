@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Rumenx\PhpChatbot\Support\ChatResponse;
+
 use Rumenx\PhpChatbot\Models\OpenAiModel;
 
 require_once __DIR__ . '/DummyLogger.php';
@@ -33,11 +35,11 @@ it('OpenAiModel logs cURL error with logger', function () {
 it('OpenAiModel logs API error (no response) with logger', function () {
     $logger = new DummyLogger();
     $model = new class('dummy', 'gpt-3.5-turbo') extends OpenAiModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             if (isset($context['logger'])) {
                 $context['logger']->error('OpenAiModel API error: No response', ['response' => []]);
             }
-            return json_encode(['status' => 'error', 'message' => '[OpenAI] No response.']);
+            return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[OpenAI] No response.', 'gpt-3.5-turbo');
         }
     };
     $model->getResponse('test', ['logger' => $logger]);
@@ -47,14 +49,14 @@ it('OpenAiModel logs API error (no response) with logger', function () {
 it('OpenAiModel logs exception with logger', function () {
     $logger = new DummyLogger();
     $model = new class('dummy', 'gpt-3.5-turbo') extends OpenAiModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             try {
                 throw new \Exception('Simulated');
             } catch (\Throwable $e) {
                 if (isset($context['logger'])) {
                     $context['logger']->error('OpenAiModel exception: ' . $e->getMessage(), ['exception' => $e]);
                 }
-                return json_encode(['status' => 'error', 'message' => '[OpenAI] Exception: ' . $e->getMessage()]);
+                return \Rumenx\PhpChatbot\Support\ChatResponse::fromString('[OpenAI] Exception: ' . $e->getMessage(), 'gpt-3.5-turbo');
             }
         }
     };
@@ -70,7 +72,7 @@ it(
             'gpt-3.5-turbo',
             'http://localhost:9999/invalid'
         );
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toContain('OpenAI');
         expect($response)->toContain('Error:');
     }

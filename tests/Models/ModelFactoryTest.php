@@ -9,6 +9,7 @@ use Rumenx\PhpChatbot\Models\AnthropicModel;
 use Rumenx\PhpChatbot\Models\XaiModel;
 use Rumenx\PhpChatbot\Models\GeminiModel;
 use Rumenx\PhpChatbot\Models\MetaModel;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 it('ModelFactory creates OpenAiModel', function () {
     $config = [
@@ -117,11 +118,11 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []): string
+            public function getResponse(string $input, array $context = []): ChatResponse
             {
-                return 'x';
+                return ChatResponse::fromString('x', 'needs-arg');
             }
         }
         expect(fn() => ModelFactory::make(['model' => NeedsArg::class]))
@@ -157,11 +158,11 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []): string
+            public function getResponse(string $input, array $context = []): ChatResponse
             {
-                return 'ok';
+                return ChatResponse::fromString('ok', 'optional-arg');
             }
         }
         $config = ['model' => OptionalArgModel::class];
@@ -197,11 +198,11 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []): string
+            public function getResponse(string $input, array $context = []): ChatResponse
             {
-                return 'fail';
+                return ChatResponse::fromString('fail', 'throws-in-ctor');
             }
         }
         expect(fn() => ModelFactory::make(['model' => ThrowsInCtor::class]))
@@ -230,11 +231,11 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []) : ChatResponse
             {
-                return 'abstract';
+                return ChatResponse::fromString('abstract', 'abstract-model');
             }
         }
         expect(fn() => ModelFactory::make(['model' => AbstractModel::class]))
@@ -290,11 +291,11 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []) : ChatResponse
             {
-                return 'private';
+                return ChatResponse::fromString('private', 'private-ctor');
             }
         }
         expect(fn() => ModelFactory::make(['model' => PrivateCtorModel::class]))
@@ -329,11 +330,11 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []) : ChatResponse
             {
-                return 'final';
+                return ChatResponse::fromString('final', 'final-private-ctor');
             }
         }
         expect(fn() => ModelFactory::make(['model' => FinalPrivateCtorModel::class]))

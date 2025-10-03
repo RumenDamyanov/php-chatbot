@@ -7,6 +7,6 @@ use Rumenx\PhpChatbot\Models\DefaultAiModel;
 
 it('returns a response from the default AI model', function () {
     $model = new DefaultAiModel();
-    $response = $model->getResponse('Hello!');
+    $response = (string) $model->getResponse('Hello!');
     expect($response)->toContain('[DefaultAI-');
 });

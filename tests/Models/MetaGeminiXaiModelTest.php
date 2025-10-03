@@ -15,7 +15,7 @@ it('MetaModel getModel/setModel', function () {
 
 it('MetaModel sendMessage returns placeholder', function () {
     $model = new MetaModel('dummy', 'llama-3-8b');
-    $response = $model->sendMessage('Hi!');
+    $response = (string) $model->sendMessage('Hi!');
     expect($response)->toContain('Meta');
 });
 
@@ -28,7 +28,7 @@ it('GeminiModel getModel/setModel', function () {
 
 it('GeminiModel getResponse returns placeholder', function () {
     $model = new GeminiModel('dummy', 'gemini-1.5-pro');
-    $response = $model->getResponse('Hi!');
+    $response = (string) $model->getResponse('Hi!');
     expect($response)->toContain('Google Gemini');
 });
 
@@ -36,7 +36,7 @@ it(
     'GeminiModel sendMessage returns placeholder',
     function () {
         $model = new GeminiModel('dummy', 'gemini-1.5-pro');
-        $response = $model->sendMessage('Hi!');
+        $response = (string) $model->sendMessage('Hi!');
         expect($response)->toContain('Google Gemini');
     }
 );
@@ -55,7 +55,7 @@ it(
     'XaiModel getResponse returns placeholder',
     function () {
         $model = new XaiModel('dummy', 'grok-1');
-        $response = $model->getResponse('Hi!');
+        $response = (string) $model->getResponse('Hi!');
         expect($response)->toContain('xAI');
     }
 );
@@ -64,7 +64,7 @@ it(
     'XaiModel sendMessage returns placeholder',
     function () {
         $model = new XaiModel('dummy', 'grok-1');
-        $response = $model->sendMessage('Hi!');
+        $response = (string) $model->sendMessage('Hi!');
         expect($response)->toContain('xAI');
     }
 );

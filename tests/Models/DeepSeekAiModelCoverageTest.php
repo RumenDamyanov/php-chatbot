@@ -25,7 +25,7 @@ it('DeepSeekAiModel logs API error with logger', function () {
 
 it('DeepSeekAiModel handles non-numeric temperature and max_tokens', function () {
     $model = new DeepSeekAiModel('dummy');
-    $response = $model->getResponse('test', [
+    $response = (string) $model->getResponse('test', [
         'temperature' => 'not-a-number',
         'max_tokens' => 'not-a-number',
     ]);
@@ -42,11 +42,12 @@ it('DeepSeekAiModel setModel/getModel edge cases', function () {
 
 it('DeepSeekAiModel handles json_encode failure', function () {
     $model = new class('dummy') extends DeepSeekAiModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             // Simulate json_encode failure by returning false
-            return json_encode(fopen('php://memory', 'r')) ?: '{"status":"error","message":"[DeepSeek] JSON encode failed."}';
+            $result = json_encode(fopen('php://memory', 'r')) ?: '{"status":"error","message":"[DeepSeek] JSON encode failed."}';
+            return \Rumenx\PhpChatbot\Support\ChatResponse::fromString($result, 'deepseek-chat');
         }
     };
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('JSON encode failed');
 });

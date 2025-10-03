@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
+use Rumenx\PhpChatbot\Support\ChatResponse;
+
 use Rumenx\PhpChatbot\Models\GeminiModel;
 
 it('GeminiModel returns default prompt if context missing', function () {
     $model = new GeminiModel('dummy');
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('No response');
 });
 
 it('GeminiModel uses custom prompt', function () {
     $model = new GeminiModel('dummy');
-    $response = $model->getResponse('test', [
+    $response = (string) $model->getResponse('test', [
         'prompt' => 'Custom!',
     ]);
     expect($response)->toContain('No response');
@@ -20,7 +22,7 @@ it('GeminiModel uses custom prompt', function () {
 
 it('GeminiModel handles non-string prompt', function () {
     $model = new GeminiModel('dummy');
-    $response = $model->getResponse('test', [
+    $response = (string) $model->getResponse('test', [
         'prompt' => 123,
     ]);
     expect($response)->toContain('No response');
@@ -28,24 +30,24 @@ it('GeminiModel handles non-string prompt', function () {
 
 it('GeminiModel handles cURL error gracefully', function () {
     $model = new GeminiModel('dummy', 'gemini-1.5-pro', 'http://localhost:9999/invalid');
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('Google Gemini');
 });
 
 it('GeminiModel returns fallback if candidates missing', function () {
     $model = new class('dummy') extends GeminiModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             // Simulate missing candidates
-            return '[Google Gemini] No response.';
+            return ChatResponse::fromString('[Google Gemini] No response.', 'gemini-1.5-pro');
         }
     };
-    $response = $model->getResponse('test');
+    $response = (string) $model->getResponse('test');
     expect($response)->toContain('No response');
 });
 
 it('GeminiModel handles exception', function () {
     $model = new class('dummy') extends GeminiModel {
-        public function getResponse(string $input, array $context = []): string {
+        public function getResponse(string $input, array $context = []): \Rumenx\PhpChatbot\Support\ChatResponse {
             throw new \Exception('Simulated');
         }
     };
@@ -68,9 +70,9 @@ it(
              * @param string $input   Input string
              * @param array  $context Context array
              *
-             * @return string
+             * @return ChatResponse
              */
-            public function getResponse(string $input, array $context = []) : string
+            public function getResponse(string $input, array $context = []): ChatResponse
             {
                 $response = [
                     'candidates' => [
@@ -91,12 +93,12 @@ it(
                         $response['candidates'][0]['content']['parts'][0]['text']
                     )
                 ) {
-                    return $response['candidates'][0]['content']['parts'][0]['text'];
+                    return ChatResponse::fromString($response['candidates'][0]['content']['parts'][0]['text'], 'gemini-1.5-pro');
                 }
-                return '[Google Gemini] No response.';
+                return ChatResponse::fromString('[Google Gemini] No response.', 'gemini-1.5-pro');
             }
         };
-        $response = $model->getResponse('test');
+        $response = (string) $model->getResponse('test');
         expect($response)->toBe('Hello from Gemini!');
     }
 );
