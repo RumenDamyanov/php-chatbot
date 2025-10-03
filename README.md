@@ -4,10 +4,30 @@
 ![Analyze](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/analyze.yml/badge.svg)
 ![Style](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/style.yml/badge.svg)
 [![codecov](https://codecov.io/gh/RumenDamyanov/php-chatbot/branch/master/graph/badge.svg)](https://codecov.io/gh/RumenDamyanov/php-chatbot)
+[![Package](https://poser.pugx.org/rumenx/php-chatbot/v/stable)](https://packagist.org/packages/rumenx/php-chatbot)
+
 
 > 📖 **Documentation**: [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) · [Funding](FUNDING.md)
 
 **php-chatbot** is a modern, framework-agnostic PHP package for integrating an AI-powered chat popup into any web application. It features out-of-the-box support for Laravel and Symfony, a flexible model abstraction for using OpenAI, Anthropic, xAI, Google Gemini, Meta, and more, and is designed for easy customization and extension. Build your own UI or use the provided minimal frontend as a starting point. High test coverage, static analysis, and coding standards are included.
+
+## 📦 Part of the Chatbot Family
+
+This is the PHP implementation of our multi-language chatbot library:
+
+- 🐘 **[php-chatbot](https://github.com/RumenDamyanov/php-chatbot)** - PHP implementation (this package)
+- 📘 **[npm-chatbot](https://github.com/RumenDamyanov/npm-chatbot)** - TypeScript/JavaScript implementation
+- 🔷 **[go-chatbot](https://github.com/RumenDamyanov/go-chatbot)** - Go implementation
+
+All implementations share the same API design and features, making it easy to switch between languages or maintain consistency across polyglot projects.
+
+## 🔗 Recommended Projects
+
+If you find **php-chatbot** useful, you might also be interested in these related projects:
+
+- 🔍 **[php-seo](https://github.com/RumenDamyanov/php-seo)** - Comprehensive SEO toolkit for PHP applications
+- 🗺️ **[php-sitemap](https://github.com/RumenDamyanov/php-sitemap)** - Dynamic XML sitemap generator for PHP
+- 🌍 **[php-geolocation](https://github.com/RumenDamyanov/php-geolocation)** - IP geolocation and geographic data tools
 
 ## Features
 
@@ -38,6 +58,7 @@ Comprehensive documentation and guides are available in our [GitHub Wiki](https:
 - **[Examples](https://github.com/RumenDamyanov/php-chatbot/wiki/Examples)** - Real-world implementations and use cases
 - **[Best Practices](https://github.com/RumenDamyanov/php-chatbot/wiki/Best-Practices)** - Production deployment and security guidelines
 - **[Security & Filtering](https://github.com/RumenDamyanov/php-chatbot/wiki/Security-and-Filtering)** - Content filtering and abuse prevention
+- **[Streaming Responses](https://github.com/RumenDamyanov/php-chatbot/wiki/Streaming-Responses)** - How to use streaming responses
 
 ### 🛠️ Development & Support
 - **[API Reference](https://github.com/RumenDamyanov/php-chatbot/wiki/API-Reference)** - Complete API documentation
@@ -102,6 +123,98 @@ $chatbot = new PhpChatbot($model, $config);
 $reply = $chatbot->ask('Hello!');
 echo $reply;
 ```
+
+## Streaming Responses
+
+**php-chatbot** now supports streaming responses for real-time chat experiences! Streaming allows you to receive and display responses as they are generated, creating a more interactive user experience.
+
+### Supported Models
+
+The following AI providers support streaming:
+
+- ✅ OpenAI (all models)
+- ✅ Anthropic Claude (all models)
+- ✅ Google Gemini (all models)
+- ✅ xAI Grok (all models)
+- ✅ Meta LLaMA (all models)
+
+### Basic Streaming Example
+
+```php
+use Rumenx\PhpChatbot\PhpChatbot;
+use Rumenx\PhpChatbot\Models\OpenAiModel;
+
+$model = new OpenAiModel('your-api-key');
+$chatbot = new PhpChatbot($model);
+
+// Get streaming response
+foreach ($chatbot->askStream('Hello!') as $chunk) {
+    echo $chunk;
+    flush(); // Send to browser immediately
+}
+```
+
+### Backend Streaming API Example
+
+For Server-Sent Events (SSE) streaming to frontend:
+
+```php
+// Set headers for SSE
+header('Content-Type: text/event-stream');
+header('Cache-Control: no-cache');
+header('X-Accel-Buffering: no'); // Disable nginx buffering
+
+$model = ModelFactory::make($config);
+$chatbot = new PhpChatbot($model, $config);
+
+// Stream chunks to client
+foreach ($chatbot->askStream($message, $context) as $chunk) {
+    echo "data: " . json_encode(['chunk' => $chunk]) . "\n\n";
+    flush();
+}
+
+echo "data: [DONE]\n\n";
+flush();
+```
+
+### Frontend Integration (JavaScript)
+
+```javascript
+const eventSource = new EventSource('/api/chatbot/stream?message=' + encodeURIComponent(message));
+
+eventSource.onmessage = function(event) {
+    if (event.data === '[DONE]') {
+        eventSource.close();
+        return;
+    }
+    
+    const data = JSON.parse(event.data);
+    // Append chunk to chat UI
+    chatMessageElement.textContent += data.chunk;
+};
+
+eventSource.onerror = function() {
+    eventSource.close();
+};
+```
+
+### Checking Streaming Support
+
+```php
+use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
+
+if ($model instanceof StreamableModelInterface && $model->supportsStreaming()) {
+    // Use streaming
+    foreach ($chatbot->askStream($message) as $chunk) {
+        // Process chunk...
+    }
+} else {
+    // Fallback to regular response
+    $reply = $chatbot->ask($message);
+}
+```
+
+> 💡 **Note**: Not all models support streaming. The `DefaultAiModel` (fallback) does not support streaming. Always check if your model implements `StreamableModelInterface` before using `askStream()`.
 
 ## Example .env
 
