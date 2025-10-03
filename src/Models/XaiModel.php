@@ -41,12 +41,12 @@ class XaiModel implements AiModelInterface
      * XaiModel constructor.
      *
      * @param string $apiKey   The API key for xAI.
-     * @param string $model    The model name.
+     * @param string $model    The model name (default: grok-2-1212).
      * @param string $endpoint The API endpoint.
      */
     public function __construct(
         string $apiKey,
-        string $model = 'xai-default',
+        string $model = 'grok-2-1212',
         string $endpoint = 'https://api.xai.com/v1/chat'
     ) {
         $this->apiKey = $apiKey;

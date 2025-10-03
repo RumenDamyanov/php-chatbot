@@ -26,12 +26,12 @@ class OpenAiModel implements AiModelInterface
      * OpenAiModel constructor.
      *
      * @param string $apiKey   The OpenAI API key.
-     * @param string $model    The model name.
+     * @param string $model    The model name (default: gpt-4o-mini).
      * @param string $endpoint The API endpoint.
      */
     public function __construct(
         string $apiKey,
-        string $model = 'gpt-3.5-turbo',
+        string $model = 'gpt-4o-mini',
         string $endpoint = 'https://api.openai.com/v1/chat/completions'
     ) {
         $this->apiKey = $apiKey;
