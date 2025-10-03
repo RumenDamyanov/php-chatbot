@@ -5,6 +5,7 @@ namespace Rumenx\PhpChatbot\Models;
 use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
 use Rumenx\PhpChatbot\Support\HttpClientInterface;
 use Rumenx\PhpChatbot\Support\CurlHttpClient;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 /**
  * Meta Model implementation for the php-chatbot package.
@@ -78,9 +79,9 @@ class MetaModel implements StreamableModelInterface
      * @param string               $input   The user input.
      * @param array<string, mixed> $context Optional context for the request.
      *
-     * @return string The response from Meta.
+     * @return ChatResponse The response from Meta.
      */
-    public function getResponse(string $input, array $context = []): string
+    public function getResponse(string $input, array $context = []): ChatResponse
     {
         try {
             $systemPrompt = 'You are a helpful chatbot.';
@@ -132,7 +133,7 @@ class MetaModel implements StreamableModelInterface
             if ($result === false) {
                 $error = curl_error($ch);
                 curl_close($ch);
-                return '[Meta] Error: ' . $error;
+                return ChatResponse::fromString('[Meta] Error: ' . $error, $this->model);
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
@@ -141,11 +142,12 @@ class MetaModel implements StreamableModelInterface
                 && isset($response['choices'][0]['message']['content'])
                 && is_string($response['choices'][0]['message']['content'])
             ) {
-                return $response['choices'][0]['message']['content'];
+                $content = $response['choices'][0]['message']['content'];
+                return ChatResponse::fromOpenAI($content, $response);
             }
-            return '[Meta] No response.';
+            return ChatResponse::fromString('[Meta] No response.', $this->model);
         } catch (\Throwable $e) {
-            return '[Meta] Exception: ' . $e->getMessage();
+            return ChatResponse::fromString('[Meta] Exception: ' . $e->getMessage(), $this->model);
         }
     }
 

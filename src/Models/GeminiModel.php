@@ -5,6 +5,7 @@ namespace Rumenx\PhpChatbot\Models;
 use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
 use Rumenx\PhpChatbot\Support\HttpClientInterface;
 use Rumenx\PhpChatbot\Support\CurlHttpClient;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 /**
  * Gemini Model implementation for the php-chatbot package.
@@ -94,9 +95,9 @@ class GeminiModel implements StreamableModelInterface
      * @param string               $input   The user input.
      * @param array<string, mixed> $context Optional context for the request.
      *
-     * @return string The response from Gemini.
+     * @return ChatResponse The response from Gemini.
      */
-    public function getResponse(string $input, array $context = []): string
+    public function getResponse(string $input, array $context = []): ChatResponse
     {
         try {
             $systemPrompt = isset($context['prompt'])
@@ -134,7 +135,7 @@ class GeminiModel implements StreamableModelInterface
             if ($result === false) {
                 $error = curl_error($ch);
                 curl_close($ch);
-                return '[Google Gemini] Error: ' . $error;
+                return ChatResponse::fromString('[Google Gemini] Error: ' . $error, $this->model);
             }
             $response = json_decode(is_string($result) ? $result : '', true);
             curl_close($ch);
@@ -145,12 +146,13 @@ class GeminiModel implements StreamableModelInterface
                     $response['candidates'][0]['content']['parts'][0]['text']
                 )
             ) {
-                return $response['candidates'][0]['content']['parts'][0]['text'];
+                $content = $response['candidates'][0]['content']['parts'][0]['text'];
+                return ChatResponse::fromGemini($content, $response, $this->model);
             }
             // Fallback for missing candidates/content
-            return '[Google Gemini] No response.';
+            return ChatResponse::fromString('[Google Gemini] No response.', $this->model);
         } catch (\Throwable $e) {
-            return '[Google Gemini] Exception: ' . $e->getMessage();
+            return ChatResponse::fromString('[Google Gemini] Exception: ' . $e->getMessage(), $this->model);
         }
     }
 

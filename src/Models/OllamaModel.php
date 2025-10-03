@@ -7,6 +7,7 @@ namespace Rumenx\PhpChatbot\Models;
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
 use InvalidArgumentException;
 use RuntimeException;
+use Rumenx\PhpChatbot\Support\ChatResponse;
 
 /**
  * Ollama AI Model implementation for the php-chatbot package.
@@ -66,9 +67,9 @@ class OllamaModel implements AiModelInterface
      * @param string               $input   The user input.
      * @param array<string, mixed> $context Optional context for the request.
      *
-     * @return string The response from the Ollama AI model.
+     * @return ChatResponse The response from the Ollama AI model.
      */
-    public function getResponse(string $input, array $context = []): string
+    public function getResponse(string $input, array $context = []): ChatResponse
     {
         $prompt = isset($context['prompt']) && is_string($context['prompt'])
             ? $context['prompt']
@@ -109,6 +110,29 @@ class OllamaModel implements AiModelInterface
         if (!is_array($json) || !isset($json['response'])) {
             throw new RuntimeException('Ollama API invalid response: ' . $result);
         }
-        return (string)$json['response'];
+        $content = (string)$json['response'];
+        return ChatResponse::fromString($content, $this->model);
+    }
+
+    /**
+     * Get the current model name.
+     *
+     * @return string
+     */
+    public function getModel(): string
+    {
+        return $this->model;
+    }
+
+    /**
+     * Set the model name.
+     *
+     * @param string $model
+     *
+     * @return void
+     */
+    public function setModel(string $model): void
+    {
+        $this->model = $model;
     }
 }
