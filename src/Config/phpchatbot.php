@@ -50,4 +50,44 @@ return [
         'aggression_patterns' => ['hate', 'kill', 'stupid', 'idiot'],
         'link_pattern' => '/https?:\/\/[\w\.-]+/i',
     ],
+
+    // Conversation Memory Settings
+    'memory' => [
+        // Enable conversation history storage
+        'enabled' => true,
+
+        // Maximum number of messages to keep per session (0 = unlimited)
+        'max_history' => 20,
+
+        // Storage backend: 'file', 'redis', 'database'
+        'storage' => 'file',
+
+        // File storage configuration
+        'file_storage' => [
+            'path' => function_exists('storage_path')
+                ? storage_path('chatbot/conversations')  // Laravel
+                : sys_get_temp_dir() . '/chatbot_conversations',  // Non-Laravel
+        ],
+
+        // Redis storage configuration (requires Redis extension or predis/predis)
+        'redis_storage' => [
+            'host' => getenv('REDIS_HOST') ?: '127.0.0.1',
+            'port' => getenv('REDIS_PORT') ?: 6379,
+            'password' => getenv('REDIS_PASSWORD') ?: null,
+            'database' => getenv('REDIS_DB') ?: 0,
+            'key_prefix' => 'chatbot:memory:',
+            'ttl' => 86400, // Time-to-live in seconds (0 = no expiration)
+        ],
+
+        // Database storage configuration (requires PDO)
+        'database_storage' => [
+            'driver' => getenv('DB_CONNECTION') ?: 'mysql',
+            'host' => getenv('DB_HOST') ?: '127.0.0.1',
+            'port' => getenv('DB_PORT') ?: 3306,
+            'database' => getenv('DB_DATABASE') ?: 'chatbot',
+            'username' => getenv('DB_USERNAME') ?: 'root',
+            'password' => getenv('DB_PASSWORD') ?: '',
+            'table_name' => 'chatbot_conversations',
+        ],
+    ],
 ];
