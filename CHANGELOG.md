@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - BREAKING CHANGE ⚠️
+- **Updated all AI model defaults to latest stable versions** (Closes #9)
+  - OpenAI: `gpt-3.5-turbo` → `gpt-4o-mini` (legacy to current)
+  - Anthropic: `claude-3-sonnet-20240229` → `claude-3-5-sonnet-20241022` (deprecated to stable)
+  - Gemini: `gemini-default` → `gemini-1.5-flash` (placeholder to stable)
+  - xAI: `xai-default` → `grok-2-1212` (placeholder to stable)
+  - Meta: `meta-default` → `llama-3.3-70b-versatile` (placeholder to stable)
+  - DeepSeek: `deepseek-chat` (no change - already current)
+- **Migration Note**: Users can still specify old model names explicitly in configuration
+- Updated `ModelFactory` with all new default values
+- Updated configuration file (`src/Config/phpchatbot.php`) with new models and options
+
 ### Added
 - Chat message filtering middleware for content safety and moderation
 - Configurable profanity, aggression, and link filtering
@@ -15,14 +27,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced contributing guidelines (CONTRIBUTING.md)
 - Funding information (FUNDING.md)
 - This changelog file (CHANGELOG.md)
+- Comprehensive implementation planning documentation in `.ai/` directory
+- Model migration documentation and guides
 
 ### Changed
 - Improved README.md with configuration best practices
 - Enhanced documentation structure and organization
+- Updated PHPDoc comments with new default model information
 
 ### Security
 - Added input validation and sanitization features
 - Implemented configurable content filtering policies
+
+### Migration Guide
+To migrate to the new model defaults:
+
+**If you don't specify a model** (using defaults):
+- No action required - you'll automatically use the new stable models
+- Expect improved performance and capabilities
+
+**If you explicitly specify a model**:
+- Your code continues to work without changes
+- Consider updating to latest model versions for better performance
+- Check provider documentation for deprecated models
+
+**Example configuration**:
+```php
+// New default (recommended)
+'openai' => [
+    'api_key' => getenv('OPENAI_API_KEY'),
+    // Uses gpt-4o-mini by default
+],
+
+// Or specify explicitly
+'openai' => [
+    'api_key' => getenv('OPENAI_API_KEY'),
+    'model' => 'gpt-4o-mini', // or any other supported model
+],
+```
 
 ## [1.0.0] - 2025-01-XX
 

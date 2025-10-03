@@ -14,27 +14,28 @@ return [
     // Model-specific config
     'openai' => [
         'api_key' => getenv('OPENAI_API_KEY') ?: '',
-        'model' => 'gpt-4o', // Options: gpt-4.1, gpt-4o, gpt-4o-mini, gpt-3.5-turbo, etc.
+        'model' => 'gpt-4o-mini', // Options: gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo (legacy), etc.
         'endpoint' => 'https://api.openai.com/v1/chat/completions',
     ],
     'anthropic' => [
         'api_key' => getenv('ANTHROPIC_API_KEY') ?: '',
-        'model' => 'claude-3-sonnet-20240229', // Options: claude-3-sonnet-20240229, claude-3-7, claude-4, etc.
+        // Options: claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229
+        'model' => 'claude-3-5-sonnet-20241022',
         'endpoint' => 'https://api.anthropic.com/v1/messages',
     ],
     'xai' => [
         'api_key' => getenv('XAI_API_KEY') ?: '',
-        'model' => 'grok-1', // Options: grok-1, grok-1.5, etc.
+        'model' => 'grok-2-1212', // Options: grok-2-1212, grok-2-vision-1212, grok-beta, etc.
         'endpoint' => 'https://api.x.ai/v1/chat/completions',
     ],
     'gemini' => [
         'api_key' => getenv('GEMINI_API_KEY') ?: '',
-        'model' => 'gemini-1.5-pro', // Options: gemini-1.5-pro, gemini-1.5-flash, etc.
+        'model' => 'gemini-1.5-flash', // Options: gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-exp, etc.
         'endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models',
     ],
     'meta' => [
         'api_key' => getenv('META_API_KEY') ?: '',
-        'model' => 'llama-3-70b', // Options: llama-3-8b, llama-3-70b, etc.
+        'model' => 'llama-3.3-70b-versatile', // Options: llama-3.3-70b-versatile, llama-3.1-405b, llama-3.1-70b, etc.
         'endpoint' => 'https://api.meta.ai/v1/chat/completions',
     ],
     'message_filtering' => [

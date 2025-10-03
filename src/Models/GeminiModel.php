@@ -41,12 +41,12 @@ class GeminiModel implements AiModelInterface
      * GeminiModel constructor.
      *
      * @param string $apiKey   The API key for Gemini.
-     * @param string $model    The model name.
+     * @param string $model    The model name (default: gemini-1.5-flash).
      * @param string $endpoint The API endpoint.
      */
     public function __construct(
         string $apiKey,
-        string $model = 'gemini-default',
+        string $model = 'gemini-1.5-flash',
         string $endpoint = 'https://api.gemini.com/v1/chat'
     ) {
         $this->apiKey = $apiKey;

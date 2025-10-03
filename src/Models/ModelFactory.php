@@ -52,7 +52,7 @@ class ModelFactory
                     $apiKey = $openai['api_key'];
                 }
                 // OpenAI model name
-                $model = 'gpt-3.5-turbo';
+                $model = 'gpt-4o-mini';
                 if (isset($openai['model']) && is_string($openai['model'])) {
                     // Model name as string
                     $model = $openai['model'];
@@ -78,7 +78,7 @@ class ModelFactory
                     $apiKey = $anthropic['api_key'];
                 }
                 // Anthropic model name
-                $model = 'claude-3-sonnet-20240229';
+                $model = 'claude-3-5-sonnet-20241022';
                 if (isset($anthropic['model']) && is_string($anthropic['model'])) {
                     // Model name as string
                     $model = $anthropic['model'];
@@ -104,7 +104,7 @@ class ModelFactory
                     $apiKey = $xai['api_key'];
                 }
                 // xAI model name
-                $model = 'grok-1';
+                $model = 'grok-2-1212';
                 if (isset($xai['model']) && is_string($xai['model'])) {
                     // Model name as string
                     $model = $xai['model'];
@@ -130,7 +130,7 @@ class ModelFactory
                     $apiKey = $gemini['api_key'];
                 }
                 // Gemini model name
-                $model = 'gemini-1.5-pro';
+                $model = 'gemini-1.5-flash';
                 if (isset($gemini['model']) && is_string($gemini['model'])) {
                     // Model name as string
                     $model = $gemini['model'];
@@ -156,7 +156,7 @@ class ModelFactory
                     $apiKey = $meta['api_key'];
                 }
                 // Meta model name
-                $model = 'llama-3-70b';
+                $model = 'llama-3.3-70b-versatile';
                 if (isset($meta['model']) && is_string($meta['model'])) {
                     // Model name as string
                     $model = $meta['model'];

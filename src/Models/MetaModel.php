@@ -31,12 +31,12 @@ class MetaModel implements AiModelInterface
      * MetaModel constructor.
      *
      * @param string $apiKey   The API key for Meta.
-     * @param string $model    The model name.
+     * @param string $model    The model name (default: llama-3.3-70b-versatile).
      * @param string $endpoint The API endpoint.
      */
     public function __construct(
         string $apiKey,
-        string $model = 'meta-default',
+        string $model = 'llama-3.3-70b-versatile',
         string $endpoint = 'https://api.meta.com/v1/chat'
     ) {
         $this->apiKey = $apiKey;

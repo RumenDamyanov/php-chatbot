@@ -43,12 +43,12 @@ class AnthropicModel implements AiModelInterface
      * AnthropicModel constructor.
      *
      * @param string $apiKey   Anthropic API key
-     * @param string $model    Model name
+     * @param string $model    Model name (default: claude-3-5-sonnet-20241022)
      * @param string $endpoint API endpoint URL
      */
     public function __construct(
         string $apiKey,
-        string $model = 'claude-3-sonnet-20240229',
+        string $model = 'claude-3-5-sonnet-20241022',
         string $endpoint = 'https://api.anthropic.com/v1/messages'
     ) {
         $this->apiKey = $apiKey;
