@@ -4,14 +4,14 @@ namespace Rumenx\PhpChatbot\Support;
 
 /**
  * cURL-based HTTP Client implementation.
- * 
+ *
  * Provides HTTP functionality using PHP's cURL extension.
  */
 class CurlHttpClient implements HttpClientInterface
 {
     /**
      * Execute an HTTP POST request with streaming support.
-     * 
+     *
      * @param string $url The URL to request
      * @param array<string, mixed> $headers HTTP headers as key-value pairs
      * @param string $body The request body (typically JSON)
@@ -22,7 +22,7 @@ class CurlHttpClient implements HttpClientInterface
     public function post(string $url, array $headers, string $body, ?callable $streamCallback = null): string
     {
         $ch = curl_init($url);
-        
+
         if ($ch === false) {
             throw new \RuntimeException('Failed to initialize cURL');
         }
@@ -45,7 +45,7 @@ class CurlHttpClient implements HttpClientInterface
         }
 
         $result = curl_exec($ch);
-        
+
         if ($result === false) {
             $error = curl_error($ch);
             curl_close($ch);
