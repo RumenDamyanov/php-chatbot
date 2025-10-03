@@ -32,11 +32,6 @@ coverage:
         informational: true
         only_pulls: true
 
-  # Configure what changes are acceptable
-  changes:
-    default:
-      threshold: 5%  # Allow up to 5% change before flagging
-
 # Ignore certain files/directories from coverage
 ignore:
   - "tests/**/*"
