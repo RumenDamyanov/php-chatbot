@@ -7,7 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Token & Cost Tracking** - Comprehensive monitoring and cost optimization features
+  - New `TokenUsage` class to track prompt/completion/total tokens
+  - New `ResponseMetadata` class with detailed response information (model, finish reason, timestamp, etc.)
+  - New `ChatResponse` class wrapping AI responses with metadata
+  - New `CostCalculator` class with pricing for all major AI providers
+  - Token tracking methods in `PhpChatbot`: `getLastTokenUsage()`, `getLastCost()`, `getLastResponse()`
+  - Cost estimation before requests: `estimateCost()`
+  - Provider comparison and optimization tools
+  - Support for budget management and cost monitoring
+  - Comprehensive token tracking documentation
+
 ### Changed - BREAKING CHANGE ⚠️
+- **All AI model classes now return `ChatResponse` instead of `string`**
+  - Affected classes: `OpenAiModel`, `AnthropicModel`, `GeminiModel`, `XaiModel`, `MetaModel`, `DeepSeekAiModel`, `OllamaModel`
+  - **Backward Compatible**: `ChatResponse` implements `Stringable` interface for automatic string conversion
+  - Existing code treating responses as strings continues to work without modification
+  - New code can access rich metadata through `ChatResponse` object
+  - Example: `$response = $chatbot->ask('Hello'); echo $response;` // Still works!
 - **Updated all AI model defaults to latest stable versions** (Closes #9)
   - OpenAI: `gpt-3.5-turbo` → `gpt-4o-mini` (legacy to current)
   - Anthropic: `claude-3-sonnet-20240229` → `claude-3-5-sonnet-20241022` (deprecated to stable)
