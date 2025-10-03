@@ -3,6 +3,7 @@
 namespace Rumenx\PhpChatbot;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Support\ConversationMemory;
 
 /**
  * Class PhpChatbot
@@ -37,17 +38,27 @@ final class PhpChatbot
     protected $config;
 
     /**
+     * Conversation memory manager.
+     *
+     * @var ConversationMemory|null
+     */
+    protected $memory;
+
+    /**
      * Constructor for PhpChatbot.
      *
      * @param AiModelInterface     $model   The AI model implementation.
      * @param array<string, mixed> $config  Optional configuration for the chatbot.
+     * @param ConversationMemory|null $memory Optional conversation memory manager.
      */
     public function __construct(
         AiModelInterface $model,
-        array $config = []
+        array $config = [],
+        ?ConversationMemory $memory = null
     ) {
         $this->model = $model;
         $this->config = $config;
+        $this->memory = $memory;
     }
 
     /**
@@ -64,7 +75,29 @@ final class PhpChatbot
         array $context = []
     ): string {
         $context = array_merge($this->config, $context);
-        return $this->model->getResponse($input, $context);
+
+        // Extract session ID if provided
+        $sessionId = $context['sessionId'] ?? null;
+
+        // Add conversation history to context if memory is enabled
+        if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
+            $history = $this->memory->getFormattedHistory($sessionId);
+            if (!empty($history)) {
+                $context['messages'] = $history;
+            }
+
+            // Add current user message to history
+            $this->memory->addMessage($sessionId, 'user', $input);
+        }
+
+        $response = $this->model->getResponse($input, $context);
+
+        // Store assistant's response in memory
+        if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
+            $this->memory->addMessage($sessionId, 'assistant', $response);
+        }
+
+        return $response;
     }
 
     /**
@@ -144,8 +177,85 @@ final class PhpChatbot
 
         $context = array_merge($this->config, $context);
 
+        // Extract session ID if provided
+        $sessionId = $context['sessionId'] ?? null;
+
+        // Add conversation history to context if memory is enabled
+        if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
+            $history = $this->memory->getFormattedHistory($sessionId);
+            if (!empty($history)) {
+                $context['messages'] = $history;
+            }
+
+            // Add current user message to history
+            $this->memory->addMessage($sessionId, 'user', $input);
+        }
+
+        // Collect full response while streaming
+        $fullResponse = '';
+
         foreach ($this->model->getStreamingResponse($input, $context) as $chunk) {
+            $fullResponse .= $chunk;
             yield $chunk;
         }
+
+        // Store assistant's complete response in memory
+        if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
+            $this->memory->addMessage($sessionId, 'assistant', $fullResponse);
+        }
+    }
+
+    /**
+     * Get conversation history for a session.
+     *
+     * @param string $sessionId The session identifier.
+     *
+     * @return array<int, array<string, mixed>> Array of messages.
+     */
+    public function getConversationHistory(string $sessionId): array
+    {
+        if ($this->memory === null) {
+            return [];
+        }
+
+        return $this->memory->getHistory($sessionId);
+    }
+
+    /**
+     * Clear conversation history for a session.
+     *
+     * @param string $sessionId The session identifier.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function clearConversationHistory(string $sessionId): bool
+    {
+        if ($this->memory === null) {
+            return false;
+        }
+
+        return $this->memory->clearHistory($sessionId);
+    }
+
+    /**
+     * Get the conversation memory manager.
+     *
+     * @return ConversationMemory|null
+     */
+    public function getMemory(): ?ConversationMemory
+    {
+        return $this->memory;
+    }
+
+    /**
+     * Set the conversation memory manager.
+     *
+     * @param ConversationMemory|null $memory
+     *
+     * @return void
+     */
+    public function setMemory(?ConversationMemory $memory): void
+    {
+        $this->memory = $memory;
     }
 }
