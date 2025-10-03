@@ -32,6 +32,8 @@ If you find **php-chatbot** useful, you might also be interested in these relate
 ## Features
 
 - Plug-and-play chat popup UI (minimal frontend dependencies)
+- **Conversation Memory** - Persistent context across messages with file/Redis/database storage
+- **Streaming Responses** - Real-time token-by-token output for better UX
 - Laravel & Symfony support via adapters/service providers
 - AI model abstraction via contracts (swap models easily)
 - Customizable prompts, tone, language, and scope
@@ -53,6 +55,7 @@ Comprehensive documentation and guides are available in our [GitHub Wiki](https:
 - **[Framework Integration](https://github.com/RumenDamyanov/php-chatbot/wiki/Framework-Integration)** - Laravel, Symfony, and plain PHP setup
 - **[Frontend Integration](https://github.com/RumenDamyanov/php-chatbot/wiki/Frontend-Integration)** - React, Vue, Angular components and examples
 - **[AI Models](https://github.com/RumenDamyanov/php-chatbot/wiki/AI-Models)** - Provider comparison and configuration
+- **[Conversation Memory](https://github.com/RumenDamyanov/php-chatbot/wiki/Conversation-Memory)** - Persistent context with file/Redis/database storage
 
 ### 📖 Examples & Best Practices
 - **[Examples](https://github.com/RumenDamyanov/php-chatbot/wiki/Examples)** - Real-world implementations and use cases
