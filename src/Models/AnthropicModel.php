@@ -14,9 +14,11 @@
 
 namespace Rumenx\PhpChatbot\Models;
 
-use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
+use Rumenx\PhpChatbot\Support\HttpClientInterface;
+use Rumenx\PhpChatbot\Support\CurlHttpClient;
 
-class AnthropicModel implements AiModelInterface
+class AnthropicModel implements StreamableModelInterface
 {
     /**
      * Anthropic API key.
@@ -40,20 +42,30 @@ class AnthropicModel implements AiModelInterface
     protected string $endpoint;
 
     /**
+     * HTTP client for making requests.
+     *
+     * @var HttpClientInterface
+     */
+    protected HttpClientInterface $httpClient;
+
+    /**
      * AnthropicModel constructor.
      *
      * @param string $apiKey   Anthropic API key
      * @param string $model    Model name (default: claude-3-5-sonnet-20241022)
      * @param string $endpoint API endpoint URL
+     * @param HttpClientInterface|null $httpClient Optional HTTP client (for testing)
      */
     public function __construct(
         string $apiKey,
         string $model = 'claude-3-5-sonnet-20241022',
-        string $endpoint = 'https://api.anthropic.com/v1/messages'
+        string $endpoint = 'https://api.anthropic.com/v1/messages',
+        ?HttpClientInterface $httpClient = null
     ) {
         $this->apiKey = $apiKey;
         $this->model = $model;
         $this->endpoint = $endpoint;
+        $this->httpClient = $httpClient ?? new CurlHttpClient();
     }
 
     /**
@@ -149,5 +161,98 @@ class AnthropicModel implements AiModelInterface
         } catch (\Throwable $e) {
             return '[Anthropic] Exception: ' . $e->getMessage();
         }
+    }
+
+    /**
+     * Get a streaming response from the Anthropic Claude model.
+     *
+     * This method returns a Generator that yields response chunks as they
+     * become available. Due to PHP Generator limitations with cURL callbacks,
+     * chunks are collected during the HTTP transfer and yielded afterward.
+     *
+     * @param string               $input   The user input message.
+     * @param array<string, mixed> $context Optional context for the request.
+     *
+     * @return \Generator<int, string> Generator yielding response chunks.
+     */
+    public function getStreamingResponse(string $input, array $context = []): \Generator
+    {
+        $systemPrompt = 'You are a helpful chatbot.';
+        if (isset($context['prompt']) && is_string($context['prompt'])) {
+            $systemPrompt = $context['prompt'];
+        }
+
+        $maxTokens = 256;
+        if (isset($context['max_tokens']) && is_numeric($context['max_tokens'])) {
+            $maxTokens = (int) $context['max_tokens'];
+        }
+
+        $temperature = 0.7;
+        if (isset($context['temperature']) && is_numeric($context['temperature'])) {
+            $temperature = (float) $context['temperature'];
+        }
+
+        $data = [
+            'model' => $this->model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $input],
+            ],
+            'max_tokens' => $maxTokens,
+            'temperature' => $temperature,
+            'stream' => true,
+        ];
+
+        $streamBuffer = new \Rumenx\PhpChatbot\Support\StreamBuffer();
+        $chunks = [];
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'x-api-key' => $this->apiKey,
+            'anthropic-version' => '2023-06-01',
+        ];
+
+        $streamCallback = function ($ch, $chunk) use ($streamBuffer, &$chunks) {
+            $streamBuffer->add($chunk);
+
+            // Collect chunks as they become available
+            while ($streamBuffer->hasChunks()) {
+                $content = $streamBuffer->getChunk();
+                if ($content !== null) {
+                    $chunks[] = $content;
+                }
+            }
+
+            return strlen($chunk);
+        };
+
+        try {
+            $this->httpClient->post(
+                $this->endpoint,
+                $headers,
+                json_encode($data),
+                $streamCallback
+            );
+        } catch (\RuntimeException $e) {
+            yield '[Anthropic Streaming] Error: ' . $e->getMessage();
+            return;
+        }
+
+        // Yield collected chunks
+        foreach ($chunks as $chunk) {
+            yield $chunk;
+        }
+    }
+
+    /**
+     * Check if Anthropic provider supports streaming.
+     *
+     * Anthropic Claude API supports streaming for all models.
+     *
+     * @return bool Always returns true for Anthropic.
+     */
+    public function supportsStreaming(): bool
+    {
+        return true;
     }
 }

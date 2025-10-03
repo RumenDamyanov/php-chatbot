@@ -110,4 +110,42 @@ final class PhpChatbot
     {
         $this->config = $config;
     }
+
+    /**
+     * Get a streaming response from the chatbot.
+     *
+     * This method returns a Generator that yields response chunks as they
+     * become available from the AI provider. This enables real-time streaming
+     * of responses without waiting for the complete response.
+     *
+     * @param string               $input   The user input message.
+     * @param array<string, mixed> $context Optional runtime context (merged
+     *                                      with config).
+     *
+     * @return \Generator<int, string> Generator yielding response chunks.
+     * @throws \RuntimeException If the current model doesn't support streaming.
+     */
+    public function askStream(
+        string $input,
+        array $context = []
+    ): \Generator {
+        if (!$this->model instanceof \Rumenx\PhpChatbot\Contracts\StreamableModelInterface) {
+            throw new \RuntimeException(
+                'Current AI model does not implement StreamableModelInterface. ' .
+                'Streaming is not supported for this provider.'
+            );
+        }
+
+        if (!$this->model->supportsStreaming()) {
+            throw new \RuntimeException(
+                'Streaming is not available for the current model configuration.'
+            );
+        }
+
+        $context = array_merge($this->config, $context);
+
+        foreach ($this->model->getStreamingResponse($input, $context) as $chunk) {
+            yield $chunk;
+        }
+    }
 }

@@ -2,7 +2,9 @@
 
 namespace Rumenx\PhpChatbot\Models;
 
-use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
+use Rumenx\PhpChatbot\Support\HttpClientInterface;
+use Rumenx\PhpChatbot\Support\CurlHttpClient;
 
 /**
  * Meta Model implementation for the php-chatbot package.
@@ -16,7 +18,7 @@ use Rumenx\PhpChatbot\Contracts\AiModelInterface;
  * @license  MIT License (https://opensource.org/licenses/MIT)
  * @link     https://github.com/RumenDamyanov/php-chatbot
  */
-class MetaModel implements AiModelInterface
+class MetaModel implements StreamableModelInterface
 {
     /**
      * The API key for Meta.
@@ -26,6 +28,7 @@ class MetaModel implements AiModelInterface
     protected string $apiKey;
     protected string $model;
     protected string $endpoint;
+    protected HttpClientInterface $httpClient;
 
     /**
      * MetaModel constructor.
@@ -33,15 +36,18 @@ class MetaModel implements AiModelInterface
      * @param string $apiKey   The API key for Meta.
      * @param string $model    The model name (default: llama-3.3-70b-versatile).
      * @param string $endpoint The API endpoint.
+     * @param HttpClientInterface|null $httpClient Optional HTTP client for dependency injection.
      */
     public function __construct(
         string $apiKey,
         string $model = 'llama-3.3-70b-versatile',
-        string $endpoint = 'https://api.meta.com/v1/chat'
+        string $endpoint = 'https://api.meta.com/v1/chat',
+        ?HttpClientInterface $httpClient = null
     ) {
         $this->apiKey = $apiKey;
         $this->model = $model;
         $this->endpoint = $endpoint;
+        $this->httpClient = $httpClient ?? new CurlHttpClient();
     }
 
     /**
@@ -154,5 +160,99 @@ class MetaModel implements AiModelInterface
     public function sendMessage(string $message, array $context = []): string
     {
         return '[Meta/' . $this->model . '] This is a placeholder response.';
+    }
+
+    /**
+     * Get a streaming response from the Meta model.
+     *
+     * This method returns a Generator that yields response chunks as they
+     * become available. Due to PHP Generator limitations with cURL callbacks,
+     * chunks are collected during the HTTP transfer and yielded afterward.
+     *
+     * Meta LLaMA models use OpenAI-compatible API format.
+     *
+     * @param string               $input   The user input message.
+     * @param array<string, mixed> $context Optional context for the request.
+     *
+     * @return \Generator<int, string> Generator yielding response chunks.
+     */
+    public function getStreamingResponse(string $input, array $context = []): \Generator
+    {
+        $systemPrompt = 'You are a helpful chatbot.';
+        if (isset($context['prompt']) && is_string($context['prompt'])) {
+            $systemPrompt = $context['prompt'];
+        }
+
+        $maxTokens = 256;
+        if (isset($context['max_tokens']) && is_numeric($context['max_tokens'])) {
+            $maxTokens = (int) $context['max_tokens'];
+        }
+
+        $temperature = 0.7;
+        if (isset($context['temperature']) && is_numeric($context['temperature'])) {
+            $temperature = (float) $context['temperature'];
+        }
+
+        $data = [
+            'model' => $this->model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $input],
+            ],
+            'max_tokens' => $maxTokens,
+            'temperature' => $temperature,
+            'stream' => true,
+        ];
+
+        $streamBuffer = new \Rumenx\PhpChatbot\Support\StreamBuffer();
+        $chunks = [];
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->apiKey,
+        ];
+
+        $streamCallback = function ($ch, $chunk) use ($streamBuffer, &$chunks) {
+            $streamBuffer->add($chunk);
+
+            // Collect chunks as they become available
+            while ($streamBuffer->hasChunks()) {
+                $content = $streamBuffer->getChunk();
+                if ($content !== null) {
+                    $chunks[] = $content;
+                }
+            }
+
+            return strlen($chunk);
+        };
+
+        try {
+            $this->httpClient->post(
+                $this->endpoint,
+                $headers,
+                json_encode($data),
+                $streamCallback
+            );
+        } catch (\RuntimeException $e) {
+            yield '[Meta Streaming] Error: ' . $e->getMessage();
+            return;
+        }
+
+        // Yield collected chunks
+        foreach ($chunks as $chunk) {
+            yield $chunk;
+        }
+    }
+
+    /**
+     * Check if Meta provider supports streaming.
+     *
+     * Meta LLaMA models use OpenAI-compatible API and support streaming.
+     *
+     * @return bool Always returns true for Meta.
+     */
+    public function supportsStreaming(): bool
+    {
+        return true;
     }
 }

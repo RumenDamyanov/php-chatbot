@@ -2,7 +2,9 @@
 
 namespace Rumenx\PhpChatbot\Models;
 
-use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
+use Rumenx\PhpChatbot\Support\HttpClientInterface;
+use Rumenx\PhpChatbot\Support\CurlHttpClient;
 
 /**
  * Gemini Model implementation for the php-chatbot package.
@@ -16,7 +18,7 @@ use Rumenx\PhpChatbot\Contracts\AiModelInterface;
  * @license  MIT License (https://opensource.org/licenses/MIT)
  * @link     https://github.com/RumenDamyanov/php-chatbot
  */
-class GeminiModel implements AiModelInterface
+class GeminiModel implements StreamableModelInterface
 {
     /**
      * The API key for Gemini.
@@ -38,20 +40,30 @@ class GeminiModel implements AiModelInterface
     protected string $endpoint;
 
     /**
+     * HTTP client for making requests.
+     *
+     * @var HttpClientInterface
+     */
+    protected HttpClientInterface $httpClient;
+
+    /**
      * GeminiModel constructor.
      *
      * @param string $apiKey   The API key for Gemini.
      * @param string $model    The model name (default: gemini-1.5-flash).
      * @param string $endpoint The API endpoint.
+     * @param HttpClientInterface|null $httpClient Optional HTTP client (for testing).
      */
     public function __construct(
         string $apiKey,
         string $model = 'gemini-1.5-flash',
-        string $endpoint = 'https://api.gemini.com/v1/chat'
+        string $endpoint = 'https://api.gemini.com/v1/chat',
+        ?HttpClientInterface $httpClient = null
     ) {
         $this->apiKey = $apiKey;
         $this->model = $model;
         $this->endpoint = $endpoint;
+        $this->httpClient = $httpClient ?? new CurlHttpClient();
     }
 
     /**
@@ -155,5 +167,93 @@ class GeminiModel implements AiModelInterface
         return '[Google Gemini/'
             . $this->model
             . '] This is a placeholder response.';
+    }
+
+    /**
+     * Get a streaming response from the Gemini model.
+     *
+     * This method returns a Generator that yields response chunks as they
+     * become available. Due to PHP Generator limitations with cURL callbacks,
+     * chunks are collected during the HTTP transfer and yielded afterward.
+     *
+     * @param string               $input   The user input message.
+     * @param array<string, mixed> $context Optional context for the request.
+     *
+     * @return \Generator<int, string> Generator yielding response chunks.
+     */
+    public function getStreamingResponse(string $input, array $context = []): \Generator
+    {
+        $systemPrompt = isset($context['prompt'])
+            && is_string($context['prompt'])
+            ? $context['prompt']
+            : 'You are a helpful chatbot.';
+
+        $data = [
+            'contents' => [
+                [
+                    'role' => 'user',
+                    'parts' => [
+                        [
+                            'text' => $systemPrompt . "\n" . $input
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $url = rtrim($this->endpoint, '/')
+            . '/' . $this->model
+            . ':streamGenerateContent?key=' . $this->apiKey;
+
+        $streamBuffer = new \Rumenx\PhpChatbot\Support\StreamBuffer();
+        $chunks = [];
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->apiKey,
+        ];
+
+        $streamCallback = function ($ch, $chunk) use ($streamBuffer, &$chunks) {
+            $streamBuffer->add($chunk);
+
+            // Collect chunks as they become available
+            while ($streamBuffer->hasChunks()) {
+                $content = $streamBuffer->getChunk();
+                if ($content !== null) {
+                    $chunks[] = $content;
+                }
+            }
+
+            return strlen($chunk);
+        };
+
+        try {
+            $this->httpClient->post(
+                $url,
+                $headers,
+                json_encode($data),
+                $streamCallback
+            );
+        } catch (\RuntimeException $e) {
+            yield '[Google Gemini Streaming] Error: ' . $e->getMessage();
+            return;
+        }
+
+        // Yield collected chunks
+        foreach ($chunks as $chunk) {
+            yield $chunk;
+        }
+    }
+
+    /**
+     * Check if Gemini provider supports streaming.
+     *
+     * Google Gemini API supports streaming via streamGenerateContent endpoint.
+     *
+     * @return bool Always returns true for Gemini.
+     */
+    public function supportsStreaming(): bool
+    {
+        return true;
     }
 }

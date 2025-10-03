@@ -3,12 +3,15 @@
 namespace Rumenx\PhpChatbot\Models;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
+use Rumenx\PhpChatbot\Support\HttpClientInterface;
+use Rumenx\PhpChatbot\Support\CurlHttpClient;
 
 /**
  * OpenAI Model implementation for the php-chatbot package.
  *
  * This class provides integration with the OpenAI API for generating chatbot
- * responses.
+ * responses with support for both standard and streaming responses.
  *
  * @category Models
  * @package  Rumenx\PhpChatbot
@@ -16,11 +19,12 @@ use Rumenx\PhpChatbot\Contracts\AiModelInterface;
  * @license  MIT License (https://opensource.org/licenses/MIT)
  * @link     https://github.com/RumenDamyanov/php-chatbot
  */
-class OpenAiModel implements AiModelInterface
+class OpenAiModel implements StreamableModelInterface
 {
     protected string $apiKey;
     protected string $endpoint;
     protected string $model;
+    protected HttpClientInterface $httpClient;
 
     /**
      * OpenAiModel constructor.
@@ -28,15 +32,18 @@ class OpenAiModel implements AiModelInterface
      * @param string $apiKey   The OpenAI API key.
      * @param string $model    The model name (default: gpt-4o-mini).
      * @param string $endpoint The API endpoint.
+     * @param HttpClientInterface|null $httpClient Optional HTTP client (for testing).
      */
     public function __construct(
         string $apiKey,
         string $model = 'gpt-4o-mini',
-        string $endpoint = 'https://api.openai.com/v1/chat/completions'
+        string $endpoint = 'https://api.openai.com/v1/chat/completions',
+        ?HttpClientInterface $httpClient = null
     ) {
         $this->apiKey = $apiKey;
         $this->endpoint = $endpoint;
         $this->model = $model;
+        $this->httpClient = $httpClient ?? new CurlHttpClient();
     }
 
     /**
@@ -160,5 +167,100 @@ class OpenAiModel implements AiModelInterface
             }
             return '[OpenAI] Exception: ' . $e->getMessage();
         }
+    }
+
+    /**
+     * Get streaming response from OpenAI API.
+     *
+     * This method streams the response from OpenAI in real-time using
+     * Server-Sent Events (SSE). Yields response chunks as they arrive.
+     *
+     * Note: This implementation collects the full response before yielding
+     * due to PHP Generator limitations with cURL callbacks. For true streaming
+     * in a web context, consider using JavaScript/frontend streaming.
+     *
+     * @param string               $input   The user input.
+     * @param array<string, mixed> $context Optional context for the request.
+     *
+     * @return \Generator<int, string> Generator yielding response chunks.
+     */
+    public function getStreamingResponse(string $input, array $context = []): \Generator
+    {
+        $systemPrompt = 'You are a helpful chatbot.';
+        if (isset($context['prompt']) && is_string($context['prompt'])) {
+            $systemPrompt = $context['prompt'];
+        }
+
+        $maxTokens = 256;
+        if (isset($context['max_tokens']) && is_numeric($context['max_tokens'])) {
+            $maxTokens = (int) $context['max_tokens'];
+        }
+
+        $temperature = 0.7;
+        if (isset($context['temperature']) && is_numeric($context['temperature'])) {
+            $temperature = (float) $context['temperature'];
+        }
+
+        $data = [
+            'model' => $this->model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $input],
+            ],
+            'max_tokens' => $maxTokens,
+            'temperature' => $temperature,
+            'stream' => true,
+        ];
+
+        $streamBuffer = new \Rumenx\PhpChatbot\Support\StreamBuffer();
+        $chunks = [];
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->apiKey,
+        ];
+
+        $streamCallback = function ($ch, $chunk) use ($streamBuffer, &$chunks) {
+            $streamBuffer->add($chunk);
+
+            // Collect chunks as they become available
+            while ($streamBuffer->hasChunks()) {
+                $content = $streamBuffer->getChunk();
+                if ($content !== null) {
+                    $chunks[] = $content;
+                }
+            }
+
+            return strlen($chunk);
+        };
+
+        try {
+            $this->httpClient->post(
+                $this->endpoint,
+                $headers,
+                json_encode($data),
+                $streamCallback
+            );
+        } catch (\RuntimeException $e) {
+            yield '[OpenAI Streaming] Error: ' . $e->getMessage();
+            return;
+        }
+
+        // Yield collected chunks
+        foreach ($chunks as $chunk) {
+            yield $chunk;
+        }
+    }
+
+    /**
+     * Check if OpenAI provider supports streaming.
+     *
+     * OpenAI API supports streaming for all chat completion models.
+     *
+     * @return bool Always returns true for OpenAI.
+     */
+    public function supportsStreaming(): bool
+    {
+        return true;
     }
 }
