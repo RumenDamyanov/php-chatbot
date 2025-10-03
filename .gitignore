@@ -5,6 +5,8 @@
 /.phpunit.result.cache
 /.phpunit/
 /coverage-html/
+/wiki/
+/.ai/
 /.env
 /.env.*
 !/.env.example
