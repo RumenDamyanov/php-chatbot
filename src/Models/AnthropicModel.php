@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Anthropic Claude model adapter for php-chatbot.
  *
@@ -13,6 +11,8 @@ declare(strict_types=1);
  * @license  MIT https://opensource.org/licenses/MIT
  * @link     https://github.com/RumenDamyanov/php-chatbot
  */
+
+declare(strict_types=1);
 
 namespace Rumenx\PhpChatbot\Models;
 

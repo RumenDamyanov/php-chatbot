@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Laravel service provider for php-chatbot.
  *
@@ -15,6 +13,8 @@ declare(strict_types=1);
  * @link       https://github.com/RumenDamyanov/php-chatbot
  * @phpversion 8.3
  */
+
+declare(strict_types=1);
 
 namespace Rumenx\PhpChatbot\Adapters\Laravel;
 
