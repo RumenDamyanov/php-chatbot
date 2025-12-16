@@ -108,13 +108,13 @@ class GeminiModel implements StreamableModelInterface
                 && is_string($context['prompt'])
                 ? $context['prompt']
                 : 'You are a helpful chatbot.';
-            
+
             // Build contents array with conversation history (Gemini format)
             $contents = [];
-            
+
             // Build the conversation: system prompt + history + current message
             $conversationText = $systemPrompt . "\n\n";
-            
+
             // Add conversation history if provided
             if (!empty($context['messages']) && is_array($context['messages'])) {
                 foreach ($context['messages'] as $msg) {
@@ -128,17 +128,17 @@ class GeminiModel implements StreamableModelInterface
                     }
                 }
             }
-            
+
             // Add current user message
             $conversationText .= "User: " . $input;
-            
+
             $contents[] = [
                 'role' => 'user',
                 'parts' => [
                     ['text' => $conversationText]  // Now includes conversation history!
                 ]
             ];
-            
+
             $data = [
                 'contents' => $contents
             ];
@@ -157,6 +157,15 @@ class GeminiModel implements StreamableModelInterface
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            
+            // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
+            if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
+                /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            }
+            
             $result = curl_exec($ch);
             if ($result === false) {
                 $error = curl_error($ch);

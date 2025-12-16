@@ -89,4 +89,3 @@ enum HealthStatus: string
         };
     }
 }
-

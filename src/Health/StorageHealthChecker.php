@@ -45,24 +45,31 @@ class StorageHealthChecker implements HealthCheckerInterface
 
         try {
             // Test write
-            $testData = [
-                ['role' => 'user', 'content' => 'health check'],
-                ['role' => 'assistant', 'content' => 'ok'],
-            ];
+            $testData = ['test' => 'health_check_data'];
 
-            $this->storage->save(self::TEST_SESSION, $testData);
+            $writeSuccess = $this->storage->store(self::TEST_SESSION, $testData);
+
+            if (!$writeSuccess) {
+                return new HealthCheckResult(
+                    HealthStatus::UNHEALTHY,
+                    'Storage write failed',
+                    ['operation' => 'store'],
+                    microtime(true) - $startTime,
+                    new \DateTimeImmutable()
+                );
+            }
 
             // Test read
-            $retrieved = $this->storage->load(self::TEST_SESSION);
+            $retrieved = $this->storage->retrieve(self::TEST_SESSION);
 
             // Verify data integrity
-            if ($retrieved !== $testData) {
+            if ($retrieved === null || $retrieved !== $testData) {
                 return new HealthCheckResult(
                     HealthStatus::UNHEALTHY,
                     'Storage data integrity check failed',
                     [
-                        'expected_count' => count($testData),
-                        'actual_count' => count($retrieved),
+                        'write_success' => $writeSuccess,
+                        'read_result' => $retrieved === null ? 'null' : 'mismatch',
                     ],
                     microtime(true) - $startTime,
                     new \DateTimeImmutable()
@@ -70,7 +77,7 @@ class StorageHealthChecker implements HealthCheckerInterface
             }
 
             // Clean up test data
-            $this->storage->clear(self::TEST_SESSION);
+            $this->storage->delete(self::TEST_SESSION);
 
             $duration = microtime(true) - $startTime;
 
@@ -132,4 +139,3 @@ class StorageHealthChecker implements HealthCheckerInterface
         return $this->critical;
     }
 }
-

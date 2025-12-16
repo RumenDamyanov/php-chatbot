@@ -124,6 +124,14 @@ it(
             {
                 return ChatResponse::fromString('x', 'needs-arg');
             }
+            
+            public function getModel(): string {
+                return 'needs-arg';
+            }
+            
+            public function setModel(string $model): void {
+                // No-op
+            }
         }
         expect(fn() => ModelFactory::make(['model' => NeedsArg::class]))
             ->toThrow(Error::class);
@@ -163,6 +171,14 @@ it(
             public function getResponse(string $input, array $context = []): ChatResponse
             {
                 return ChatResponse::fromString('ok', 'optional-arg');
+            }
+            
+            public function getModel(): string {
+                return 'optional-arg';
+            }
+            
+            public function setModel(string $model): void {
+                // No-op
             }
         }
         $config = ['model' => OptionalArgModel::class];
@@ -204,6 +220,14 @@ it(
             {
                 return ChatResponse::fromString('fail', 'throws-in-ctor');
             }
+            
+            public function getModel(): string {
+                return 'throws-in-ctor';
+            }
+            
+            public function setModel(string $model): void {
+                // No-op
+            }
         }
         expect(fn() => ModelFactory::make(['model' => ThrowsInCtor::class]))
             ->toThrow(RuntimeException::class);
@@ -236,6 +260,14 @@ it(
             public function getResponse(string $input, array $context = []) : ChatResponse
             {
                 return ChatResponse::fromString('abstract', 'abstract-model');
+            }
+            
+            public function getModel(): string {
+                return 'abstract-model';
+            }
+            
+            public function setModel(string $model): void {
+                // No-op
             }
         }
         expect(fn() => ModelFactory::make(['model' => AbstractModel::class]))
@@ -297,6 +329,14 @@ it(
             {
                 return ChatResponse::fromString('private', 'private-ctor');
             }
+            
+            public function getModel(): string {
+                return 'private-ctor';
+            }
+            
+            public function setModel(string $model): void {
+                // No-op
+            }
         }
         expect(fn() => ModelFactory::make(['model' => PrivateCtorModel::class]))
             ->toThrow(Error::class);
@@ -335,6 +375,14 @@ it(
             public function getResponse(string $input, array $context = []) : ChatResponse
             {
                 return ChatResponse::fromString('final', 'final-private-ctor');
+            }
+            
+            public function getModel(): string {
+                return 'final-private-ctor';
+            }
+            
+            public function setModel(string $model): void {
+                // No-op
             }
         }
         expect(fn() => ModelFactory::make(['model' => FinalPrivateCtorModel::class]))

@@ -93,4 +93,3 @@ class RateLimitException extends PhpChatbotException
         return time() + $this->resetIn;
     }
 }
-

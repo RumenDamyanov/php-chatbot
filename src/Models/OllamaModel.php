@@ -96,6 +96,15 @@ class OllamaModel implements AiModelInterface
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_TIMEOUT, (int)$this->timeout);
+        
+        // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
+        if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
+            /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        }
+        
         $result = curl_exec($ch);
         $err = curl_error($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);

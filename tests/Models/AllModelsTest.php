@@ -46,8 +46,14 @@ it('DefaultAiModel returns a default response', function () {
     expect($response)->toContain('default AI response');
 });
 
-it('OpenAiModel returns error with dummy key', function () {
+it('OpenAiModel throws exception with dummy key', function () {
     $model = new OpenAiModel('dummy-key');
-    $response = (string) $model->getResponse('Hi!');
-    expect($response)->toContain('OpenAI');
+    try {
+        $model->getResponse('Hi!');
+        expect(false)->toBeTrue('Expected exception to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('OpenAI');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('OpenAI');
+    }
 });

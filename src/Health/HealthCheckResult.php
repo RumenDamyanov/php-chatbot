@@ -213,4 +213,3 @@ class HealthCheckResult
         return json_encode($this->toArray(), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
     }
 }
-

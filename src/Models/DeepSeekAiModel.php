@@ -100,10 +100,10 @@ class DeepSeekAiModel implements AiModelInterface
             }
             // Build messages array with conversation history
             $messages = [];
-            
+
             // 1. Add system prompt
             $messages[] = ['role' => 'system', 'content' => $systemPrompt];
-            
+
             // 2. Add conversation history if provided
             if (!empty($context['messages']) && is_array($context['messages'])) {
                 foreach ($context['messages'] as $msg) {
@@ -120,10 +120,10 @@ class DeepSeekAiModel implements AiModelInterface
                     }
                 }
             }
-            
+
             // 3. Add current user message
             $messages[] = ['role' => 'user', 'content' => $input];
-            
+
             $data = [
                 'model' => $this->model,
                 'messages' => $messages,  // Now includes conversation history!
@@ -142,6 +142,15 @@ class DeepSeekAiModel implements AiModelInterface
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            
+            // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
+            if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
+                /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            }
+            
             $result = curl_exec($ch);
             if ($result === false) {
                 $error = curl_error($ch);

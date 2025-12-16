@@ -91,7 +91,7 @@ class HealthMonitor
 
         foreach ($results as $key => $result) {
             $checker = $this->checkers[$key];
-            
+
             $details[$key] = [
                 'status' => $result->getStatus()->value,
                 'message' => $result->getMessage(),
@@ -180,4 +180,3 @@ class HealthMonitor
         $this->checkers = [];
     }
 }
-

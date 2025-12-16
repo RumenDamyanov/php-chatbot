@@ -138,4 +138,3 @@ class CacheHealthChecker implements HealthCheckerInterface
         return $this->critical;
     }
 }
-

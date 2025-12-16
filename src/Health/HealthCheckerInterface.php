@@ -38,4 +38,3 @@ interface HealthCheckerInterface
      */
     public function isCritical(): bool;
 }
-

@@ -15,4 +15,3 @@ namespace Rumenx\PhpChatbot\Exceptions;
 class PhpChatbotException extends \Exception
 {
 }
-

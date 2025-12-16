@@ -21,4 +21,3 @@ namespace Rumenx\PhpChatbot\Exceptions;
 class InvalidConfigException extends \InvalidArgumentException
 {
 }
-

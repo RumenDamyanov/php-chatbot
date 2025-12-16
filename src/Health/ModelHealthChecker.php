@@ -130,4 +130,3 @@ class ModelHealthChecker implements HealthCheckerInterface
         return $this->critical;
     }
 }
-

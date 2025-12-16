@@ -101,4 +101,3 @@ class ApiException extends PhpChatbotException
         return $this->statusCode !== null && $this->statusCode >= 500 && $this->statusCode < 600;
     }
 }
-

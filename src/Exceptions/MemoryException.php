@@ -18,4 +18,3 @@ namespace Rumenx\PhpChatbot\Exceptions;
 class MemoryException extends PhpChatbotException
 {
 }
-

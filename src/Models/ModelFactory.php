@@ -132,10 +132,10 @@ class ModelFactory
     {
         $registry = self::MODEL_REGISTRY[$modelClass];
         $configKey = $registry['key'];
-        
+
         // Extract model-specific configuration
         $modelConfig = $config[$configKey] ?? [];
-        
+
         if (!is_array($modelConfig)) {
             throw new InvalidConfigException(
                 "Configuration for '{$configKey}' must be an array, " . gettype($modelConfig) . ' given.'

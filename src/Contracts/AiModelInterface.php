@@ -16,4 +16,19 @@ interface AiModelInterface
      * @return ChatResponse
      */
     public function getResponse(string $input, array $context = []): ChatResponse;
+
+    /**
+     * Get the model name/identifier.
+     *
+     * @return string
+     */
+    public function getModel(): string;
+
+    /**
+     * Set the model name/identifier.
+     *
+     * @param string $model
+     * @return void
+     */
+    public function setModel(string $model): void;
 }

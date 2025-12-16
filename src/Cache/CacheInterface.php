@@ -74,4 +74,3 @@ interface CacheInterface
      */
     public function generateKey(string $input, array $context = []): string;
 }
-

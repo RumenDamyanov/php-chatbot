@@ -145,12 +145,12 @@ final class PhpChatbot
 
         // Check cache if enabled (and caching is not disabled for this request)
         $cacheEnabled = ($context['cache_enabled'] ?? true) && $this->cache !== null;
-        $cacheKey = null;
-        
-        if ($cacheEnabled) {
+        $cacheKey = '';
+
+        if ($cacheEnabled && $this->cache !== null) {
             $cacheKey = $this->cache->generateKey($input, $context);
             $cachedResponse = $this->cache->get($cacheKey);
-            
+
             if ($cachedResponse !== null) {
                 $this->lastResponse = $cachedResponse;
                 return (string) $cachedResponse;
@@ -175,7 +175,7 @@ final class PhpChatbot
             $this->lastResponse = $response;
 
             // Store in cache if enabled
-            if ($cacheEnabled && $cacheKey !== null) {
+            if ($cacheEnabled && $cacheKey !== '' && $this->cache !== null) {
                 $cacheTtl = $context['cache_ttl'] ?? 3600;
                 $this->cache->set($cacheKey, $response, $cacheTtl);
             }
@@ -192,11 +192,11 @@ final class PhpChatbot
         } catch (PhpChatbotException $e) {
             // Check if we should propagate exceptions or return error messages
             $throwExceptions = $context['throw_exceptions'] ?? false;
-            
+
             if ($throwExceptions) {
                 throw $e;
             }
-            
+
             // Graceful degradation: return error message
             $errorMessage = $e->getMessage();
             $this->lastResponse = ChatResponse::fromString($errorMessage, 'error');
@@ -499,11 +499,7 @@ final class PhpChatbot
         ?string $model = null
     ): float {
         if ($model === null) {
-            if (method_exists($this->model, 'getModel')) {
-                $model = $this->model->getModel();
-            } else {
-                $model = 'unknown';
-            }
+            $model = $this->model->getModel();
         }
 
         return $this->costCalculator->estimate(

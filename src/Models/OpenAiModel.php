@@ -107,10 +107,10 @@ class OpenAiModel implements StreamableModelInterface
             }
             // Build messages array with conversation history
             $messages = [];
-            
+
             // 1. Add system prompt
             $messages[] = ['role' => 'system', 'content' => $systemPrompt];
-            
+
             // 2. Add conversation history if provided
             if (!empty($context['messages']) && is_array($context['messages'])) {
                 foreach ($context['messages'] as $msg) {
@@ -127,10 +127,10 @@ class OpenAiModel implements StreamableModelInterface
                     }
                 }
             }
-            
+
             // 3. Add current user message
             $messages[] = ['role' => 'user', 'content' => $input];
-            
+
             $data = [
                 'model' => $this->model,
                 'messages' => $messages,  // Now includes conversation history!
@@ -149,6 +149,17 @@ class OpenAiModel implements StreamableModelInterface
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            
+            // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
+            if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
+                /** @phpstan-ignore-next-line */
+                /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                /** @phpstan-ignore-next-line */
+                /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            }
+            
             $result = curl_exec($ch);
             if ($result === false) {
                 $error = curl_error($ch);
@@ -163,7 +174,7 @@ class OpenAiModel implements StreamableModelInterface
                     );
                 }
                 curl_close($ch);
-                
+
                 // Throw NetworkException for cURL errors
                 throw new NetworkException(
                     '[OpenAI] Network error: ' . $error,
@@ -171,12 +182,12 @@ class OpenAiModel implements StreamableModelInterface
                     $error
                 );
             }
-            
+
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            
+
             $response = json_decode(is_string($result) ? $result : '', true);
-            
+
             // Check for successful response
             if (
                 is_array($response)
@@ -186,7 +197,7 @@ class OpenAiModel implements StreamableModelInterface
                 $content = $response['choices'][0]['message']['content'];
                 return ChatResponse::fromOpenAI($content, $response);
             }
-            
+
             // Handle API errors
             if (
                 isset($context['logger'])
@@ -197,7 +208,7 @@ class OpenAiModel implements StreamableModelInterface
                     ['response' => $response, 'http_code' => $httpCode]
                 );
             }
-            
+
             // Throw ApiException for invalid API responses
             throw new ApiException(
                 '[OpenAI] Invalid API response: No content in response',
@@ -261,10 +272,10 @@ class OpenAiModel implements StreamableModelInterface
 
         // Build messages array with conversation history
         $messages = [];
-        
+
         // 1. Add system prompt
         $messages[] = ['role' => 'system', 'content' => $systemPrompt];
-        
+
         // 2. Add conversation history if provided
         if (!empty($context['messages']) && is_array($context['messages'])) {
             foreach ($context['messages'] as $msg) {
@@ -281,10 +292,10 @@ class OpenAiModel implements StreamableModelInterface
                 }
             }
         }
-        
+
         // 3. Add current user message
         $messages[] = ['role' => 'user', 'content' => $input];
-        
+
         $data = [
             'model' => $this->model,
             'messages' => $messages,  // Now includes conversation history!

@@ -107,7 +107,7 @@ class MemoryRateLimiter implements RateLimiterInterface
 
         $now = time();
         $windowStart = $now - $windowSeconds;
-        
+
         // Get oldest timestamp in current window
         $timestamps = array_filter(
             $this->buckets[$key],
@@ -161,4 +161,3 @@ class MemoryRateLimiter implements RateLimiterInterface
         return $this->buckets;
     }
 }
-

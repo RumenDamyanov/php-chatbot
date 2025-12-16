@@ -126,7 +126,7 @@ class RedisRateLimiter implements RateLimiterInterface
 
         // Get score (timestamp) of oldest entry
         $oldestScore = $this->redis->zScore($redisKey, $oldest[0]);
-        
+
         if ($oldestScore === false) {
             return 0;
         }
@@ -167,4 +167,3 @@ class RedisRateLimiter implements RateLimiterInterface
         }
     }
 }
-

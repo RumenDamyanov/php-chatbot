@@ -62,4 +62,3 @@ interface RateLimiterInterface
      */
     public function clear(): void;
 }
-

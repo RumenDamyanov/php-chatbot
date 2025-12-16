@@ -112,7 +112,7 @@ class FileCache implements CacheInterface
 
         // Write atomically using temp file + rename
         $tempFile = $filePath . '.tmp.' . uniqid('', true);
-        
+
         if (@file_put_contents($tempFile, $serialized, LOCK_EX) === false) {
             @unlink($tempFile);
             return false;
@@ -164,7 +164,7 @@ class FileCache implements CacheInterface
     public function clear(): bool
     {
         $files = glob($this->cacheDir . '/chatbot_*.cache');
-        
+
         if ($files === false) {
             return false;
         }
@@ -228,7 +228,7 @@ class FileCache implements CacheInterface
     public function gc(): int
     {
         $files = glob($this->cacheDir . '/chatbot_*.cache');
-        
+
         if ($files === false) {
             return 0;
         }
@@ -259,4 +259,3 @@ class FileCache implements CacheInterface
         return $deleted;
     }
 }
-
