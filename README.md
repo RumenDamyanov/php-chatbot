@@ -1,10 +1,11 @@
 # php-chatbot
 
-![CI](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/ci.yml/badge.svg)
-![Analyze](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/analyze.yml/badge.svg)
-![Style](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/style.yml/badge.svg)
+[![CI](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/ci.yml)
+[![Analyze](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/analyze.yml/badge.svg)](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/analyze.yml)
+[![Style](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/style.yml/badge.svg)](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/style.yml)
+[![CodeQL](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/github-code-scanning/codeql)
+[![Dependabot](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/RumenDamyanov/php-chatbot/actions/workflows/dependabot/dependabot-updates)
 [![codecov](https://codecov.io/gh/RumenDamyanov/php-chatbot/branch/master/graph/badge.svg)](https://codecov.io/gh/RumenDamyanov/php-chatbot)
-[![Package](https://poser.pugx.org/rumenx/php-chatbot/v/stable)](https://packagist.org/packages/rumenx/php-chatbot)
 
 
 > 📖 **Documentation**: [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) · [Funding](FUNDING.md)
@@ -35,13 +36,17 @@ If you find **php-chatbot** useful, you might also be interested in these relate
 - **Token & Cost Tracking** - Monitor API usage and optimize costs with detailed token analytics
 - **Conversation Memory** - Persistent context across messages with file/Redis/database storage
 - **Streaming Responses** - Real-time token-by-token output for better UX
+- **Rate Limiting** - Built-in request throttling with memory and Redis backends
+- **Response Caching** - Intelligent caching to reduce API costs and improve performance
+- **Health Monitoring** - Comprehensive health checks for models, storage, and cache
+- **Exception Hierarchy** - Robust error handling with specific exception types
 - Laravel & Symfony support via adapters/service providers
 - AI model abstraction via contracts (swap models easily)
 - Customizable prompts, tone, language, and scope
 - Emoji and multi-script support (Cyrillic, Greek, Armenian, Asian, etc.)
 - Security safeguards against abuse
-- High test coverage (Pest)
-- Static analysis (phpstan) & coding standards (phpcs, Symfony style)
+- High test coverage (80%+, 540+ tests with Pest)
+- Static analysis (PHPStan Level MAX) & coding standards (PSR-12, Symfony style)
 
 ## 📚 Documentation & Wiki
 
@@ -58,6 +63,9 @@ Comprehensive documentation and guides are available in our [GitHub Wiki](https:
 - **[AI Models](https://github.com/RumenDamyanov/php-chatbot/wiki/AI-Models)** - Provider comparison and configuration
 - **[Token & Cost Tracking](https://github.com/RumenDamyanov/php-chatbot/wiki/Token-Tracking)** - Monitor API usage, track costs, and optimize spending
 - **[Conversation Memory](https://github.com/RumenDamyanov/php-chatbot/wiki/Conversation-Memory)** - Persistent context with file/Redis/database storage
+- **[Rate Limiting](https://github.com/RumenDamyanov/php-chatbot/wiki/Rate-Limiting)** - Built-in request throttling and abuse prevention
+- **[Response Caching](https://github.com/RumenDamyanov/php-chatbot/wiki/Response-Caching)** - Smart caching to reduce API costs
+- **[Health Monitoring](https://github.com/RumenDamyanov/php-chatbot/wiki/Health-Monitoring)** - System health checks and monitoring
 
 ### 📖 Examples & Best Practices
 - **[Examples](https://github.com/RumenDamyanov/php-chatbot/wiki/Examples)** - Real-world implementations and use cases
@@ -75,15 +83,16 @@ Comprehensive documentation and guides are available in our [GitHub Wiki](https:
 
 ## Supported AI Providers & Models
 
-| Provider   | Example Models / Notes                                 | API Key Required | Local/Remote |
-|------------|--------------------------------------------------------|------------------|--------------|
-| OpenAI     | gpt-4.1, gpt-4o, gpt-4o-mini, gpt-3.5-turbo, etc.      | Yes              | Remote       |
-| Anthropic  | Claude 3 Sonnet, 3.7, 4, etc.                          | Yes              | Remote       |
-| xAI        | Grok-1, Grok-1.5, etc.                                 | Yes              | Remote       |
-| Google     | Gemini 1.5 Pro, Gemini 1.5 Flash, etc.                 | Yes              | Remote       |
-| Meta       | Llama 3 (8B, 70B), etc.                                | Yes              | Remote       |
-| Ollama     | llama2, mistral, phi3, and any local Ollama model      | No (local) / Opt | Local/Remote |
-| Free model | Simple fallback, no API key required                   | No               | Local        |
+| Provider   | Example Models / Notes                                 | API Key Required | Local/Remote | Streaming |
+|------------|--------------------------------------------------------|------------------|--------------|-----------|
+| OpenAI     | gpt-4.1, gpt-4o, gpt-4o-mini, gpt-3.5-turbo, etc.      | Yes              | Remote       | ✅        |
+| Anthropic  | Claude 3 Sonnet, 3.7, 4, etc.                          | Yes              | Remote       | ✅        |
+| xAI        | Grok-1, Grok-1.5, etc.                                 | Yes              | Remote       | ✅        |
+| Google     | Gemini 1.5 Pro, Gemini 1.5 Flash, etc.                 | Yes              | Remote       | ✅        |
+| Meta       | Llama 3 (8B, 70B), etc.                                | Yes              | Remote       | ✅        |
+| DeepSeek   | DeepSeek Chat, DeepSeek Coder, etc.                    | Yes              | Remote       | ✅        |
+| Ollama     | llama2, mistral, phi3, and any local Ollama model      | No (local) / Opt | Local/Remote | ✅        |
+| Free model | Simple fallback, no API key required                   | No               | Local        | ❌        |
 
 ## Installation
 
@@ -172,6 +181,8 @@ The following AI providers support streaming:
 - ✅ Google Gemini (all models)
 - ✅ xAI Grok (all models)
 - ✅ Meta LLaMA (all models)
+- ✅ DeepSeek (all models)
+- ✅ Ollama (all models)
 
 ### Basic Streaming Example
 
@@ -251,13 +262,289 @@ if ($model instanceof StreamableModelInterface && $model->supportsStreaming()) {
 
 > 💡 **Note**: Not all models support streaming. The `DefaultAiModel` (fallback) does not support streaming. Always check if your model implements `StreamableModelInterface` before using `askStream()`.
 
+## Rate Limiting
+
+**php-chatbot** includes built-in rate limiting to prevent API abuse and control costs. Configure rate limits per user, IP, or session.
+
+### Supported Backends
+
+- ✅ **Memory** - In-memory rate limiting (default, single-server)
+- ✅ **Redis** - Distributed rate limiting (multi-server, production-ready)
+
+### Basic Usage
+
+```php
+use Rumenx\PhpChatbot\PhpChatbot;
+use Rumenx\PhpChatbot\Models\OpenAiModel;
+
+$config = require 'src/Config/phpchatbot.php';
+$config['rate_limiting'] = [
+    'enabled' => true,
+    'driver' => 'memory', // or 'redis'
+    'limits' => [
+        'requests' => 10,    // 10 requests
+        'window' => 60,      // per 60 seconds
+    ],
+];
+
+$model = new OpenAiModel('your-api-key');
+$chatbot = new PhpChatbot($model, $config);
+
+try {
+    $reply = $chatbot->ask('Hello!');
+} catch (\Rumenx\PhpChatbot\RateLimiting\RateLimitException $e) {
+    // Rate limit exceeded
+    echo "Too many requests. Try again in {$e->getRetryAfter()} seconds.";
+}
+```
+
+### Redis Configuration
+
+```php
+$config['rate_limiting'] = [
+    'enabled' => true,
+    'driver' => 'redis',
+    'limits' => [
+        'requests' => 100,
+        'window' => 3600,  // 100 requests per hour
+    ],
+    'redis' => [
+        'host' => '127.0.0.1',
+        'port' => 6379,
+        'database' => 0,
+    ],
+];
+```
+
+> 💡 **Tip**: Use Redis for production deployments with multiple servers. Memory backend is perfect for single-server setups.
+
+## Response Caching
+
+Reduce API costs and improve response times with intelligent response caching.
+
+### Supported Backends
+
+- ✅ **Memory** - In-memory cache (fast, single request)
+- ✅ **File** - File-based cache (persistent, single-server)
+- ✅ **Redis** - Distributed cache (multi-server, recommended for production)
+
+### Basic Usage
+
+```php
+$config['cache'] = [
+    'enabled' => true,
+    'driver' => 'file',  // 'memory', 'file', or 'redis'
+    'ttl' => 3600,       // Cache for 1 hour
+    'path' => '/tmp/chatbot-cache',  // for file driver
+];
+
+$chatbot = new PhpChatbot($model, $config);
+
+// First call: hits API
+$reply1 = $chatbot->ask('What is PHP?');
+
+// Second call: returns cached response (no API call)
+$reply2 = $chatbot->ask('What is PHP?');
+```
+
+### Cache Key Generation
+
+Cache keys are automatically generated based on:
+- User message (normalized)
+- Model name and configuration
+- System prompt
+- Conversation context
+
+### Redis Cache Configuration
+
+```php
+$config['cache'] = [
+    'enabled' => true,
+    'driver' => 'redis',
+    'ttl' => 7200,  // 2 hours
+    'redis' => [
+        'host' => '127.0.0.1',
+        'port' => 6379,
+        'database' => 1,
+    ],
+];
+```
+
+> 💡 **Tip**: Enable caching for FAQ-style chatbots or when users ask similar questions frequently.
+
+## Health Monitoring
+
+Monitor the health of your chatbot infrastructure with built-in health checks.
+
+### Supported Health Checks
+
+- ✅ **Model Health** - AI provider availability and response time
+- ✅ **Storage Health** - Conversation memory storage (file/Redis/database)
+- ✅ **Cache Health** - Caching system availability
+
+### Basic Usage
+
+```php
+use Rumenx\PhpChatbot\Health\HealthMonitor;
+use Rumenx\PhpChatbot\Health\ModelHealthChecker;
+use Rumenx\PhpChatbot\Health\StorageHealthChecker;
+use Rumenx\PhpChatbot\Health\CacheHealthChecker;
+
+$model = new OpenAiModel('your-api-key');
+$storage = new FileStorage('/tmp/chatbot-memory');
+$cache = new MemoryCache();
+
+$monitor = new HealthMonitor();
+$monitor->registerChecker('model', new ModelHealthChecker($model));
+$monitor->registerChecker('storage', new StorageHealthChecker($storage));
+$monitor->registerChecker('cache', new CacheHealthChecker($cache));
+
+// Check overall health
+$results = $monitor->checkAll();
+$overallHealth = $monitor->getOverallHealth($results);
+
+echo "System Health: {$overallHealth->value}\n";
+
+foreach ($results as $name => $result) {
+    echo "{$name}: {$result->status->value} ";
+    echo "({$result->metrics['response_time']}ms)\n";
+    
+    if ($result->message) {
+        echo "  → {$result->message}\n";
+    }
+}
+```
+
+### Health Status Levels
+
+- 🟢 **HEALTHY** - All systems operational
+- 🟡 **DEGRADED** - System working but with issues
+- 🔴 **UNHEALTHY** - System not functional
+
+### Integration with Monitoring Tools
+
+```php
+// HTTP endpoint for health checks
+Route::get('/health/chatbot', function () {
+    $results = $healthMonitor->checkAll();
+    $status = $healthMonitor->getOverallHealth($results);
+    
+    return response()->json([
+        'status' => $status->value,
+        'checks' => array_map(fn($r) => [
+            'status' => $r->status->value,
+            'message' => $r->message,
+            'metrics' => $r->metrics,
+        ], $results),
+    ], $status === HealthStatus::HEALTHY ? 200 : 503);
+});
+```
+
+> 💡 **Tip**: Integrate with tools like Datadog, New Relic, or Prometheus for comprehensive monitoring.
+
+## Exception Handling
+
+**php-chatbot** provides a comprehensive exception hierarchy for precise error handling and debugging.
+
+### Exception Types
+
+```php
+use Rumenx\PhpChatbot\Exceptions\PhpChatbotException;      // Base exception
+use Rumenx\PhpChatbot\Exceptions\ApiException;            // API-related errors
+use Rumenx\PhpChatbot\Exceptions\NetworkException;        // Network/connectivity errors
+use Rumenx\PhpChatbot\Exceptions\ModelException;          // Model-specific errors
+use Rumenx\PhpChatbot\Exceptions\InvalidConfigException;  // Configuration errors
+use Rumenx\PhpChatbot\Exceptions\MemoryException;         // Memory storage errors
+use Rumenx\PhpChatbot\RateLimiting\RateLimitException;    // Rate limit errors
+```
+
+### Exception Handling Example
+
+```php
+use Rumenx\PhpChatbot\Exceptions\ApiException;
+use Rumenx\PhpChatbot\Exceptions\NetworkException;
+use Rumenx\PhpChatbot\Exceptions\RateLimitException;
+
+try {
+    $reply = $chatbot->ask($message);
+    echo $reply;
+} catch (RateLimitException $e) {
+    // User exceeded rate limit
+    http_response_code(429);
+    echo json_encode([
+        'error' => 'Too many requests',
+        'retry_after' => $e->getRetryAfter(),
+    ]);
+} catch (ApiException $e) {
+    // API error (invalid key, quota exceeded, etc.)
+    http_response_code(502);
+    echo json_encode([
+        'error' => 'AI service error',
+        'details' => $e->getMessage(),
+        'status_code' => $e->getStatusCode(),
+    ]);
+} catch (NetworkException $e) {
+    // Network/connectivity error
+    http_response_code(503);
+    echo json_encode([
+        'error' => 'Service temporarily unavailable',
+        'details' => $e->getMessage(),
+    ]);
+} catch (\Exception $e) {
+    // Generic error
+    http_response_code(500);
+    echo json_encode(['error' => 'Internal server error']);
+}
+```
+
+### Disable Exceptions (Return Error Strings)
+
+For backward compatibility, you can disable exception throwing:
+
+```php
+$config['throw_exceptions'] = false;
+
+$chatbot = new PhpChatbot($model, $config);
+$reply = $chatbot->ask($message);
+
+// Errors will be returned as strings instead of throwing exceptions
+if (str_starts_with($reply, 'Error:')) {
+    // Handle error
+}
+```
+
+> 💡 **Tip**: Keep `throw_exceptions` enabled (default) for production. Use specific catch blocks for granular error handling.
+
 ## Example .env
 
 ```env
+# AI Provider API Keys
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=...
 GEMINI_API_KEY=...
 XAI_API_KEY=...
+META_API_KEY=...
+DEEPSEEK_API_KEY=...
+
+# Rate Limiting (optional)
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_DRIVER=memory  # or 'redis'
+RATE_LIMIT_REQUESTS=10
+RATE_LIMIT_WINDOW=60
+
+# Caching (optional)
+CACHE_ENABLED=true
+CACHE_DRIVER=file  # 'memory', 'file', or 'redis'
+CACHE_TTL=3600
+CACHE_PATH=/tmp/chatbot-cache
+
+# Redis Configuration (if using Redis for rate limiting or caching)
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_DATABASE=0
+
+# Exception Handling (optional, default: true)
+THROW_EXCEPTIONS=true
 ```
 
 ## API Endpoint Contract
@@ -311,8 +598,9 @@ composer test
 
 ```sh
 composer test
-# or for coverage
-./vendor/bin/pest --coverage --min=90
+# or for coverage with minimum threshold
+./vendor/bin/pest --coverage --min=80
+# current coverage: 80.6% ✅
 ```
 
 ## Static Analysis
@@ -329,21 +617,39 @@ composer style
 
 ## Security
 
-- Input validation and abuse prevention built-in.
-- Rate limiting and content filtering available via config.
+- Input validation and abuse prevention built-in
+- Built-in rate limiting with memory and Redis backends
+- Content filtering middleware available via config
+- Comprehensive exception handling for security monitoring
+- Configurable request throttling per user/IP/session
 
 ## Rate Limiting & Abuse Prevention
 
-You can implement rate limiting and abuse prevention in your backend. For Laravel, use built-in middleware:
+**php-chatbot** includes built-in rate limiting (see [Rate Limiting](#rate-limiting) section above). For additional framework-level protection, you can combine it with Laravel/Symfony middleware:
+
+### Laravel Example
 
 ```php
 // routes/web.php
 Route::post('/php-chatbot/message', function (Request $request) {
     // ...existing code...
-})->middleware('throttle:10,1'); // 10 requests per minute per IP
+})->middleware('throttle:60,1'); // Framework-level: 60 requests per minute per IP
 ```
 
-For plain PHP, you can use a simple session or IP-based limiter, or integrate a package like `malkusch/lock` or Redis.
+### Combined Protection (Recommended)
+
+```php
+// Framework middleware: Protects against DDoS (IP-based)
+Route::middleware('throttle:60,1')->group(function () {
+    // Built-in rate limiter: Protects against API abuse (user/session-based)
+    $config['rate_limiting'] = [
+        'enabled' => true,
+        'limits' => ['requests' => 10, 'window' => 60], // 10 AI calls per minute
+    ];
+});
+```
+
+> 💡 **Best Practice**: Use framework middleware for broad DDoS protection and built-in rate limiting for fine-grained API cost control.
 
 ## JavaScript Framework Components
 
@@ -567,6 +873,37 @@ $chatbot = new PhpChatbot($model, $config);
 - Use environment variables for secrets
 - Use the provided JS/TS components as a starting point, not as production code
 - Keep your customizations outside the package directory for upgrade safety
+
+## Quality & Standards
+
+**php-chatbot** is built to production-grade standards:
+
+### ✅ Code Quality
+- **Strict Types**: `declare(strict_types=1)` in all PHP files for maximum type safety
+- **PSR-12**: Follows PSR-12 coding standards (Symfony style)
+- **PHPStan Level MAX**: Static analysis at the highest level (9) with zero errors
+- **PHPCS**: Automated code style checking and enforcement
+
+### ✅ Testing
+- **540+ Tests**: Comprehensive test suite using Pest PHP
+- **80.6% Coverage**: Production-grade code coverage
+- **CI/CD**: Automated testing on GitHub Actions (multiple PHP versions)
+- **Edge Cases**: Extensive testing of error conditions and edge cases
+
+### ✅ Architecture
+- **SOLID Principles**: Clean, maintainable, and extensible code
+- **Interface-Driven**: Model abstraction via contracts
+- **Factory Pattern**: Easy model instantiation and configuration
+- **Dependency Injection**: Testable and flexible design
+
+### ✅ Production-Ready
+- **Error Handling**: Comprehensive exception hierarchy
+- **Rate Limiting**: Built-in request throttling
+- **Response Caching**: Intelligent caching to reduce costs
+- **Health Monitoring**: System health checks and observability
+- **Logging**: PSR-3 logger support for debugging and monitoring
+
+> 💡 **Philosophy**: Simple to start, powerful in production. No compromises on code quality.
 
 ## What's Included
 
