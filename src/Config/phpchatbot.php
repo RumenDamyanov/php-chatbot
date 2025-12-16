@@ -16,6 +16,16 @@ return [
     
     // Error handling
     'throw_exceptions' => false, // Set to true to throw exceptions instead of returning error messages
+    
+    // Rate limiting
+    'rate_limit_key' => null,      // Unique identifier (e.g., user ID, IP). Defaults to sessionId or 'default'
+    'rate_limit_max' => 10,        // Maximum requests allowed
+    'rate_limit_window' => 60,     // Time window in seconds
+    
+    // Response caching
+    'cache_enabled' => true,       // Enable/disable caching per request
+    'cache_ttl' => 3600,           // Cache time-to-live in seconds (1 hour default)
+    'cache_key_components' => [],  // Additional data to include in cache key generation
     // Model-specific config
     'openai' => [
         'api_key' => getenv('OPENAI_API_KEY') ?: '',
