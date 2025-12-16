@@ -6,32 +6,44 @@ use Rumenx\PhpChatbot\Support\ChatResponse;
 
 use Rumenx\PhpChatbot\Models\MetaModel;
 
-it('MetaModel returns default prompt if context missing', function () {
+it('MetaModel throws exception if context missing', function () {
     $model = new MetaModel('dummy');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('Error:');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected exception to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException | \Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Meta');
+    }
 });
 
-it('MetaModel uses custom prompt', function () {
+it('MetaModel throws exception with custom prompt', function () {
     $model = new MetaModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 'Custom!',
-    ]);
-    expect($response)->toContain('Error:');
+    try {
+        $model->getResponse('test', ['prompt' => 'Custom!']);
+        expect(false)->toBeTrue('Expected exception to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException | \Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Meta');
+    }
 });
 
-it('MetaModel handles non-string prompt', function () {
+it('MetaModel throws exception with non-string prompt', function () {
     $model = new MetaModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 123,
-    ]);
-    expect($response)->toContain('Error:');
+    try {
+        $model->getResponse('test', ['prompt' => 123]);
+        expect(false)->toBeTrue('Expected exception to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException | \Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Meta');
+    }
 });
 
-it('MetaModel handles cURL error gracefully', function () {
+it('MetaModel throws NetworkException on cURL error', function () {
     $model = new MetaModel('dummy', 'llama-3-70b', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('Meta');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('Meta');
+    }
 });
 
 it('MetaModel returns fallback if choices missing', function () {
@@ -149,17 +161,20 @@ it(
 );
 
 it(
-    'MetaModel returns error if cURL fails',
+    'MetaModel throws NetworkException if cURL fails',
     function () {
         $model = new MetaModel(
             'dummy',
             'llama-3-70b',
             'http://localhost:9999/invalid'
         );
-        // Patch curl_exec to simulate failure by using an invalid endpoint
-        $response = (string) $model->getResponse('test');
-        expect($response)->toContain('Meta');
-        expect($response)->toContain('Error:');
+        try {
+            $model->getResponse('test');
+            expect(false)->toBeTrue('Expected NetworkException to be thrown');
+        } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+            expect($e->getMessage())->toContain('Meta');
+            expect($e->getMessage())->toContain('Network error');
+        }
     }
 );
 

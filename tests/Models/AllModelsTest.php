@@ -10,34 +10,54 @@ use Rumenx\PhpChatbot\Models\DeepSeekAiModel;
 use Rumenx\PhpChatbot\Models\DefaultAiModel;
 use Rumenx\PhpChatbot\Models\OpenAiModel;
 
-it('AnthropicModel returns placeholder', function () {
+it('AnthropicModel throws exception with invalid key', function () {
     $model = new AnthropicModel('dummy-key', 'claude-3-sonnet-20240229');
-    $response = (string) $model->getResponse('Hi!');
-    expect($response)->toContain('Anthropic');
+    try {
+        $model->getResponse('Hi!');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Anthropic');
+    }
 });
 
-it('XaiModel returns placeholder', function () {
+it('XaiModel throws exception with invalid key', function () {
     $model = new XaiModel('dummy-key', 'grok-1');
-    $response = (string) $model->getResponse('Hi!');
-    expect($response)->toContain('xAI');
+    try {
+        $model->getResponse('Hi!');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('xAI');
+    }
 });
 
-it('GeminiModel returns placeholder', function () {
+it('GeminiModel throws exception with invalid key', function () {
     $model = new GeminiModel('dummy-key', 'gemini-1.5-pro');
-    $response = (string) $model->getResponse('Hi!');
-    expect($response)->toContain('Google Gemini');
+    try {
+        $model->getResponse('Hi!');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Google Gemini');
+    }
 });
 
-it('MetaModel returns placeholder', function () {
+it('MetaModel throws exception with invalid key', function () {
     $model = new MetaModel('dummy-key', 'llama-3-70b');
-    $response = (string) $model->getResponse('Hi!');
-    expect($response)->toContain('Meta');
+    try {
+        $model->getResponse('Hi!');
+        expect(false)->toBeTrue('Expected exception to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException | \Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Meta');
+    }
 });
 
-it('DeepSeekAiModel returns placeholder', function () {
+it('DeepSeekAiModel throws exception with invalid key', function () {
     $model = new DeepSeekAiModel('dummy-key');
-    $response = (string) $model->getResponse('Hi!');
-    expect($response)->toContain('DeepSeek');
+    try {
+        $model->getResponse('Hi!');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+    }
 });
 
 it('DefaultAiModel returns a default response', function () {

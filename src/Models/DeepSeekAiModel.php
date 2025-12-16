@@ -142,7 +142,7 @@ class DeepSeekAiModel implements AiModelInterface
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            
+
             // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
             if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
                 /** @phpstan-ignore-next-line */
@@ -150,24 +150,36 @@ class DeepSeekAiModel implements AiModelInterface
                 /** @phpstan-ignore-next-line */
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
             }
-            
+
             $result = curl_exec($ch);
             if ($result === false) {
                 $error = curl_error($ch);
+                $errorCode = curl_errno($ch);
                 if (
                     isset($context['logger'])
                     && $context['logger'] instanceof \Psr\Log\LoggerInterface
                 ) {
                     $context['logger']->error(
                         'DeepSeekAiModel cURL error: ' . $error,
-                        ['data' => $data]
+                        ['data' => $data, 'curl_error_code' => $errorCode]
                     );
                 }
                 curl_close($ch);
-                return ChatResponse::fromString('[DeepSeek] Error: ' . $error, $this->model);
+
+                // Throw NetworkException for cURL errors
+                throw new NetworkException(
+                    '[DeepSeek] Network error: ' . $error,
+                    $errorCode,
+                    $error
+                );
             }
-            $response = json_decode(is_string($result) ? $result : '', true);
+
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
+
+            $response = json_decode(is_string($result) ? $result : '', true);
+
+            // Check for successful response
             if (
                 is_array($response)
                 && isset($response['choices'][0]['message']['content'])
@@ -176,27 +188,44 @@ class DeepSeekAiModel implements AiModelInterface
                 $content = $response['choices'][0]['message']['content'];
                 return ChatResponse::fromOpenAI($content, $response);
             }
+
+            // Handle API errors
             if (
                 isset($context['logger'])
                 && $context['logger'] instanceof \Psr\Log\LoggerInterface
             ) {
                 $context['logger']->error(
-                    'DeepSeekAiModel API error: No response',
-                    ['response' => $response]
+                    'DeepSeekAiModel API error: No valid response',
+                    ['response' => $response, 'http_code' => $httpCode]
                 );
             }
-            return ChatResponse::fromString('[DeepSeek] No response.', $this->model);
+
+            // Throw ApiException for invalid API responses
+            throw new ApiException(
+                '[DeepSeek] Invalid API response: No content in response',
+                $httpCode,
+                is_string($result) ? $result : json_encode($response)
+            );
+        } catch (NetworkException | ApiException $e) {
+            // Re-throw our custom exceptions
+            throw $e;
         } catch (\Throwable $e) {
+            // Wrap unexpected exceptions
             if (
                 isset($context['logger'])
                 && $context['logger'] instanceof \Psr\Log\LoggerInterface
             ) {
                 $context['logger']->error(
-                    'DeepSeekAiModel exception: ' . $e->getMessage(),
-                    ['exception' => $e]
+                    'DeepSeekAiModel unexpected exception: ' . $e->getMessage(),
+                    ['exception' => get_class($e)]
                 );
             }
-            return ChatResponse::fromString('[DeepSeek] Exception: ' . $e->getMessage(), $this->model);
+            throw new ApiException(
+                '[DeepSeek] Unexpected error: ' . $e->getMessage(),
+                0,
+                '',
+                $e
+            );
         }
     }
 }

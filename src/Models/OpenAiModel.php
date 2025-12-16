@@ -149,7 +149,7 @@ class OpenAiModel implements StreamableModelInterface
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            
+
             // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
             if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
                 /** @phpstan-ignore-next-line */
@@ -159,7 +159,7 @@ class OpenAiModel implements StreamableModelInterface
                 /** @phpstan-ignore-next-line */
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
             }
-            
+
             $result = curl_exec($ch);
             if ($result === false) {
                 $error = curl_error($ch);

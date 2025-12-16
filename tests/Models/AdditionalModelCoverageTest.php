@@ -57,7 +57,7 @@ describe(
         );
 
         it(
-            'DeepSeekAiModel uses numeric temperature and max_tokens',
+            'DeepSeekAiModel throws exception with numeric temperature and max_tokens',
             function () {
                 $model = new DeepSeekAiModel('test-api-key');
 
@@ -66,15 +66,17 @@ describe(
                     'max_tokens' => 256    // numeric int
                 ];
 
-                $result = $model->getResponse('test message', $context);
-
-                expect($result)->toBeInstanceOf(ChatResponse::class);
-                expect((string) $result)->toBeString();
+                try {
+                    $model->getResponse('test message', $context);
+                    expect(false)->toBeTrue('Expected exception to be thrown');
+                } catch (\Rumenx\PhpChatbot\Exceptions\ApiException | \Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+                    expect($e->getMessage())->toContain('DeepSeek');
+                }
             }
         );
 
         it(
-            'DeepSeekAiModel handles numeric values as strings',
+            'DeepSeekAiModel throws exception with numeric values as strings',
             function () {
                 $model = new DeepSeekAiModel('test-api-key');
 
@@ -83,15 +85,17 @@ describe(
                     'max_tokens' => '512'    // string that is numeric
                 ];
 
-                $result = $model->getResponse('test message', $context);
-
-                expect($result)->toBeInstanceOf(ChatResponse::class);
-                expect((string) $result)->toBeString();
+                try {
+                    $model->getResponse('test message', $context);
+                    expect(false)->toBeTrue('Expected exception to be thrown');
+                } catch (\Rumenx\PhpChatbot\Exceptions\ApiException | \Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+                    expect($e->getMessage())->toContain('DeepSeek');
+                }
             }
         );
 
         it(
-            'MetaModel uses numeric temperature and max_tokens',
+            'MetaModel throws exception with numeric temperature and max_tokens',
             function () {
                 $model = new MetaModel('test-api-key');
 
@@ -100,15 +104,17 @@ describe(
                     'max_tokens' => 128    // numeric int
                 ];
 
-                $result = $model->getResponse('test message', $context);
-
-                expect($result)->toBeInstanceOf(ChatResponse::class);
-                expect((string) $result)->toBeString();
+                try {
+                    $model->getResponse('test message', $context);
+                    expect(false)->toBeTrue('Expected exception to be thrown');
+                } catch (\Rumenx\PhpChatbot\Exceptions\ApiException | \Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+                    expect($e->getMessage())->toContain('Meta');
+                }
             }
         );
 
         it(
-            'MetaModel handles numeric values as strings',
+            'MetaModel throws exception with numeric values as strings',
             function () {
                 $model = new MetaModel('test-api-key');
 
@@ -117,15 +123,17 @@ describe(
                     'max_tokens' => '256'    // string that is numeric
                 ];
 
-                $result = $model->getResponse('test message', $context);
-
-                expect($result)->toBeInstanceOf(ChatResponse::class);
-                expect((string) $result)->toBeString();
+                try {
+                    $model->getResponse('test message', $context);
+                    expect(false)->toBeTrue('Expected exception to be thrown');
+                } catch (\Rumenx\PhpChatbot\Exceptions\ApiException | \Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+                    expect($e->getMessage())->toContain('Meta');
+                }
             }
         );
 
         it(
-            'XaiModel uses numeric temperature and max_tokens',
+            'XaiModel throws exception with numeric temperature and max_tokens',
             function () {
                 $model = new XaiModel('test-api-key');
 
@@ -134,15 +142,17 @@ describe(
                     'max_tokens' => 384    // numeric int
                 ];
 
-                $result = $model->getResponse('test message', $context);
-
-                expect($result)->toBeInstanceOf(ChatResponse::class);
-                expect((string) $result)->toBeString();
+                try {
+                    $model->getResponse('test message', $context);
+                    expect(false)->toBeTrue('Expected exception to be thrown');
+                } catch (\Rumenx\PhpChatbot\Exceptions\ApiException | \Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+                    expect($e->getMessage())->toContain('xAI');
+                }
             }
         );
 
         it(
-            'XaiModel handles numeric values as strings',
+            'XaiModel throws exception with numeric values as strings',
             function () {
                 $model = new XaiModel('test-api-key');
 
@@ -151,10 +161,12 @@ describe(
                     'max_tokens' => '768'    // string that is numeric
                 ];
 
-                $result = $model->getResponse('test message', $context);
-
-                expect($result)->toBeInstanceOf(ChatResponse::class);
-                expect((string) $result)->toBeString();
+                try {
+                    $model->getResponse('test message', $context);
+                    expect(false)->toBeTrue('Expected exception to be thrown');
+                } catch (\Rumenx\PhpChatbot\Exceptions\ApiException | \Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+                    expect($e->getMessage())->toContain('xAI');
+                }
             }
         );
     }

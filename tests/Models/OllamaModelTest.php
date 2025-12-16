@@ -55,7 +55,7 @@ it(
             ]
         );
         expect(fn() => $model->getResponse('hi'))
-            ->toThrow(RuntimeException::class);
+            ->toThrow(\Rumenx\PhpChatbot\Exceptions\NetworkException::class);
     }
 );
 
@@ -93,14 +93,16 @@ it(
                 $result = '{"not_response": "fail"}';
                 $json = json_decode($result, true);
                 if (!is_array($json) || !isset($json['response'])) {
-                    throw new RuntimeException(
-                        'Ollama API invalid response: ' . $result
+                    throw new \Rumenx\PhpChatbot\Exceptions\ApiException(
+                        'Ollama API invalid response: ' . $result,
+                        0,
+                        $result
                     );
                 }
-                return (string)$json['response'];
+                return \Rumenx\PhpChatbot\Support\ChatResponse::fromString((string)$json['response'], 'llama2');
             }
         };
-        expect(fn() => $stub->getResponse('hi'))->toThrow(RuntimeException::class);
+        expect(fn() => $stub->getResponse('hi'))->toThrow(\Rumenx\PhpChatbot\Exceptions\ApiException::class);
     }
 );
 
@@ -111,9 +113,9 @@ it(
         try {
             $response = $model->getResponse('Hello!');
             expect($response)->toBeString();
-        } catch (RuntimeException $e) {
+        } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException | \Rumenx\PhpChatbot\Exceptions\ApiException $e) {
             // Accept connection error if Ollama is not running
-            expect($e->getMessage())->toContain('Ollama API');
+            expect($e->getMessage())->toContain('Ollama');
         }
     }
 );

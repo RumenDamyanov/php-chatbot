@@ -170,7 +170,7 @@ class AnthropicModel implements StreamableModelInterface
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            
+
             // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
             if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
                 /** @phpstan-ignore-next-line */
@@ -178,15 +178,36 @@ class AnthropicModel implements StreamableModelInterface
                 /** @phpstan-ignore-next-line */
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
             }
-            
+
             $result = curl_exec($ch);
             if ($result === false) {
                 $error = curl_error($ch);
+                $errorCode = curl_errno($ch);
+                if (
+                    isset($context['logger'])
+                    && $context['logger'] instanceof \Psr\Log\LoggerInterface
+                ) {
+                    $context['logger']->error(
+                        'AnthropicModel cURL error: ' . $error,
+                        ['data' => $data, 'curl_error_code' => $errorCode]
+                    );
+                }
                 curl_close($ch);
-                return ChatResponse::fromString('[Anthropic] Error: ' . $error, $this->model);
+
+                // Throw NetworkException for cURL errors
+                throw new NetworkException(
+                    '[Anthropic] Network error: ' . $error,
+                    $errorCode,
+                    $error
+                );
             }
-            $response = json_decode(is_string($result) ? $result : '', true);
+
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
+
+            $response = json_decode(is_string($result) ? $result : '', true);
+
+            // Check for successful response
             if (
                 is_array($response)
                 && isset($response['content'][0]['text'])
@@ -195,9 +216,44 @@ class AnthropicModel implements StreamableModelInterface
                 $content = $response['content'][0]['text'];
                 return ChatResponse::fromAnthropic($content, $response);
             }
-            return ChatResponse::fromString('[Anthropic] No response.', $this->model);
+
+            // Handle API errors
+            if (
+                isset($context['logger'])
+                && $context['logger'] instanceof \Psr\Log\LoggerInterface
+            ) {
+                $context['logger']->error(
+                    'AnthropicModel API error: No valid response',
+                    ['response' => $response, 'http_code' => $httpCode]
+                );
+            }
+
+            // Throw ApiException for invalid API responses
+            throw new ApiException(
+                '[Anthropic] Invalid API response: No content in response',
+                $httpCode,
+                is_string($result) ? $result : json_encode($response)
+            );
+        } catch (NetworkException | ApiException $e) {
+            // Re-throw our custom exceptions
+            throw $e;
         } catch (\Throwable $e) {
-            return ChatResponse::fromString('[Anthropic] Exception: ' . $e->getMessage(), $this->model);
+            // Wrap unexpected exceptions
+            if (
+                isset($context['logger'])
+                && $context['logger'] instanceof \Psr\Log\LoggerInterface
+            ) {
+                $context['logger']->error(
+                    'AnthropicModel unexpected exception: ' . $e->getMessage(),
+                    ['exception' => get_class($e)]
+                );
+            }
+            throw new ApiException(
+                '[Anthropic] Unexpected error: ' . $e->getMessage(),
+                0,
+                '',
+                $e
+            );
         }
     }
 

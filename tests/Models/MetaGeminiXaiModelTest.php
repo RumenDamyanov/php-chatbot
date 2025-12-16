@@ -26,10 +26,14 @@ it('GeminiModel getModel/setModel', function () {
     expect($model->getModel())->toBe('gemini-1.5-flash');
 });
 
-it('GeminiModel getResponse returns placeholder', function () {
+it('GeminiModel throws exception on getResponse', function () {
     $model = new GeminiModel('dummy', 'gemini-1.5-pro');
-    $response = (string) $model->getResponse('Hi!');
-    expect($response)->toContain('Google Gemini');
+    try {
+        $model->getResponse('Hi!');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Google Gemini');
+    }
 });
 
 it(
@@ -52,11 +56,15 @@ it(
 );
 
 it(
-    'XaiModel getResponse returns placeholder',
+    'XaiModel throws exception on getResponse',
     function () {
         $model = new XaiModel('dummy', 'grok-1');
-        $response = (string) $model->getResponse('Hi!');
-        expect($response)->toContain('xAI');
+        try {
+            $model->getResponse('Hi!');
+            expect(false)->toBeTrue('Expected ApiException to be thrown');
+        } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+            expect($e->getMessage())->toContain('xAI');
+        }
     }
 );
 

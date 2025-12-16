@@ -8,6 +8,8 @@ use Rumenx\PhpChatbot\Contracts\AiModelInterface;
 use InvalidArgumentException;
 use RuntimeException;
 use Rumenx\PhpChatbot\Support\ChatResponse;
+use Rumenx\PhpChatbot\Exceptions\NetworkException;
+use Rumenx\PhpChatbot\Exceptions\ApiException;
 
 /**
  * Ollama AI Model implementation for the php-chatbot package.
@@ -96,7 +98,7 @@ class OllamaModel implements AiModelInterface
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_TIMEOUT, (int)$this->timeout);
-        
+
         // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
         if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
             /** @phpstan-ignore-next-line */
@@ -104,21 +106,41 @@ class OllamaModel implements AiModelInterface
             /** @phpstan-ignore-next-line */
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         }
-        
+
         $result = curl_exec($ch);
         $err = curl_error($ch);
+        $errorCode = curl_errno($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
         if ($result === false) {
-            throw new RuntimeException('Ollama API request failed: ' . $err);
+            // Throw NetworkException for cURL errors
+            throw new NetworkException(
+                '[Ollama] Network error: ' . $err,
+                $errorCode,
+                $err
+            );
         }
+
         if ($status < 200 || $status >= 300) {
-            throw new RuntimeException('Ollama API returned HTTP ' . $status);
+            // Throw ApiException for HTTP errors
+            throw new ApiException(
+                '[Ollama] API returned HTTP ' . $status,
+                $status,
+                is_string($result) ? $result : ''
+            );
         }
+
         $json = json_decode($result, true);
         if (!is_array($json) || !isset($json['response'])) {
-            throw new RuntimeException('Ollama API invalid response: ' . $result);
+            // Throw ApiException for invalid responses
+            throw new ApiException(
+                '[Ollama] Invalid API response: No response field',
+                $status,
+                is_string($result) ? $result : json_encode($json)
+            );
         }
+
         $content = (string)$json['response'];
         return ChatResponse::fromString($content, $this->model);
     }
