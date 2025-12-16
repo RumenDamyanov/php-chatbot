@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     // Default to free model
     'model' => Rumenx\PhpChatbot\Models\DefaultAiModel::class,
@@ -11,6 +13,9 @@ return [
     'emojis' => true,
     'deescalate' => true,
     'funny' => false,
+    
+    // Error handling
+    'throw_exceptions' => false, // Set to true to throw exceptions instead of returning error messages
     // Model-specific config
     'openai' => [
         'api_key' => getenv('OPENAI_API_KEY') ?: '',

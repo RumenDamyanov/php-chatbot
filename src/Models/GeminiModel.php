@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Models;
 
 use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
 use Rumenx\PhpChatbot\Support\HttpClientInterface;
 use Rumenx\PhpChatbot\Support\CurlHttpClient;
 use Rumenx\PhpChatbot\Support\ChatResponse;
+use Rumenx\PhpChatbot\Exceptions\NetworkException;
+use Rumenx\PhpChatbot\Exceptions\ApiException;
 
 /**
  * Gemini Model implementation for the php-chatbot package.
@@ -104,17 +108,39 @@ class GeminiModel implements StreamableModelInterface
                 && is_string($context['prompt'])
                 ? $context['prompt']
                 : 'You are a helpful chatbot.';
-            $data = [
-                'contents' => [
-                    [
-                        'role' => 'user',
-                        'parts' => [
-                            [
-                                'text' => $systemPrompt . "\n" . $input
-                            ]
-                        ]
-                    ]
+            
+            // Build contents array with conversation history (Gemini format)
+            $contents = [];
+            
+            // Build the conversation: system prompt + history + current message
+            $conversationText = $systemPrompt . "\n\n";
+            
+            // Add conversation history if provided
+            if (!empty($context['messages']) && is_array($context['messages'])) {
+                foreach ($context['messages'] as $msg) {
+                    if (
+                        is_array($msg) &&
+                        isset($msg['role'], $msg['content']) &&
+                        is_string($msg['role']) &&
+                        is_string($msg['content'])
+                    ) {
+                        $conversationText .= ucfirst($msg['role']) . ": " . $msg['content'] . "\n\n";
+                    }
+                }
+            }
+            
+            // Add current user message
+            $conversationText .= "User: " . $input;
+            
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [
+                    ['text' => $conversationText]  // Now includes conversation history!
                 ]
+            ];
+            
+            $data = [
+                'contents' => $contents
             ];
             $url = rtrim($this->endpoint, '/')
                 . '/' . $this->model

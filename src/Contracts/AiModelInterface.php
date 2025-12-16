@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Contracts;
 
 use Rumenx\PhpChatbot\Support\ChatResponse;

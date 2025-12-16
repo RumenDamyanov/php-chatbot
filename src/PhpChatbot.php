@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
@@ -7,6 +9,9 @@ use Rumenx\PhpChatbot\Support\ConversationMemory;
 use Rumenx\PhpChatbot\Support\ChatResponse;
 use Rumenx\PhpChatbot\Support\TokenUsage;
 use Rumenx\PhpChatbot\Support\CostCalculator;
+use Rumenx\PhpChatbot\Exceptions\PhpChatbotException;
+use Rumenx\PhpChatbot\Exceptions\NetworkException;
+use Rumenx\PhpChatbot\Exceptions\ApiException;
 
 /**
  * Class PhpChatbot
@@ -109,20 +114,34 @@ final class PhpChatbot
             $this->memory->addMessage($sessionId, 'user', $input);
         }
 
-        $response = $this->model->getResponse($input, $context);
+        try {
+            $response = $this->model->getResponse($input, $context);
 
-        // Store the ChatResponse for token tracking
-        $this->lastResponse = $response;
+            // Store the ChatResponse for token tracking
+            $this->lastResponse = $response;
 
-        // Get the content as string
-        $responseContent = (string) $response;
+            // Get the content as string
+            $responseContent = (string) $response;
 
-        // Store assistant's response in memory
-        if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
-            $this->memory->addMessage($sessionId, 'assistant', $responseContent);
+            // Store assistant's response in memory
+            if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
+                $this->memory->addMessage($sessionId, 'assistant', $responseContent);
+            }
+
+            return $responseContent;
+        } catch (PhpChatbotException $e) {
+            // Check if we should propagate exceptions or return error messages
+            $throwExceptions = $context['throw_exceptions'] ?? false;
+            
+            if ($throwExceptions) {
+                throw $e;
+            }
+            
+            // Graceful degradation: return error message
+            $errorMessage = $e->getMessage();
+            $this->lastResponse = ChatResponse::fromString($errorMessage, 'error');
+            return $errorMessage;
         }
-
-        return $responseContent;
     }
 
     /**

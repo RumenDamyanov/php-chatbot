@@ -5,6 +5,7 @@
 /.phpunit.result.cache
 /.phpunit/
 /coverage-html/
+/scripts/
 /wiki/
 /.ai/
 /.env
@@ -14,6 +15,8 @@
 /node_modules/
 /idea/
 /.vscode/
+/.cursor/
+/.idea/
 /.cache/
 /.pest*
 *.log

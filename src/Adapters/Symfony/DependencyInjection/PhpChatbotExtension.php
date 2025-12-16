@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Adapters\Symfony\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;

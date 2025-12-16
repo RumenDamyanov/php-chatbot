@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Models;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;

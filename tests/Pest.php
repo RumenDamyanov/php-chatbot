@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Pest\TestSuite;
 
 // You can add global test helpers or setup here if needed.

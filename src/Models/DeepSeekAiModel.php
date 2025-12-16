@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Models;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
 use Rumenx\PhpChatbot\Support\ChatResponse;
+use Rumenx\PhpChatbot\Exceptions\NetworkException;
+use Rumenx\PhpChatbot\Exceptions\ApiException;
 
 /**
  * DeepSeek AI Model implementation for the PHP Chatbot package.
@@ -94,12 +98,35 @@ class DeepSeekAiModel implements AiModelInterface
                 $tokens = $context['max_tokens'];
                 $maxTokens = (int) $tokens;
             }
+            // Build messages array with conversation history
+            $messages = [];
+            
+            // 1. Add system prompt
+            $messages[] = ['role' => 'system', 'content' => $systemPrompt];
+            
+            // 2. Add conversation history if provided
+            if (!empty($context['messages']) && is_array($context['messages'])) {
+                foreach ($context['messages'] as $msg) {
+                    if (
+                        is_array($msg) &&
+                        isset($msg['role'], $msg['content']) &&
+                        is_string($msg['role']) &&
+                        is_string($msg['content'])
+                    ) {
+                        $messages[] = [
+                            'role' => $msg['role'],
+                            'content' => $msg['content']
+                        ];
+                    }
+                }
+            }
+            
+            // 3. Add current user message
+            $messages[] = ['role' => 'user', 'content' => $input];
+            
             $data = [
                 'model' => $this->model,
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $input],
-                ],
+                'messages' => $messages,  // Now includes conversation history!
                 'temperature' => $temperature,
                 'max_tokens' => $maxTokens,
             ];

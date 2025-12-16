@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Rumenx\PhpChatbot\PhpChatbot;
 use Rumenx\PhpChatbot\Support\ConversationMemory;
 use Rumenx\PhpChatbot\Support\Storage\FileStorage;

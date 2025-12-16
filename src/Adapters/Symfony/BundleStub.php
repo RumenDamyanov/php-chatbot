@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Adapters\Symfony;
 
 // Dummy base class for IDE/static analysis if Symfony is not installed
