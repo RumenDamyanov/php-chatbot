@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Rumenx\PhpChatbot\Models\OpenAiModel;
 use Rumenx\PhpChatbot\Models\AnthropicModel;
 use Rumenx\PhpChatbot\Models\GeminiModel;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Rumenx\PhpChatbot\Support\CurlHttpClient;
 use Rumenx\PhpChatbot\Support\HttpClientInterface;
 

@@ -8,34 +8,54 @@ use Rumenx\PhpChatbot\Models\GeminiModel;
 use Rumenx\PhpChatbot\Models\MetaModel;
 use Rumenx\PhpChatbot\Models\XaiModel;
 
-it('AnthropicModel handles cURL error', function () {
+it('AnthropicModel throws NetworkException on cURL error', function () {
     $model = new AnthropicModel('dummy', 'claude-3-sonnet', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('Anthropic');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('Anthropic');
+    }
 });
 
-it('DeepSeekAiModel handles cURL error', function () {
+it('DeepSeekAiModel throws NetworkException on cURL error', function () {
     $model = new DeepSeekAiModel('dummy', 'deepseek-chat', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('DeepSeek');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+    }
 });
 
-it('GeminiModel handles cURL error', function () {
+it('GeminiModel throws NetworkException on cURL error', function () {
     $model = new GeminiModel('dummy', 'gemini-1.5-pro', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('Google Gemini');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('Google Gemini');
+    }
 });
 
-it('MetaModel handles cURL error', function () {
+it('MetaModel throws NetworkException on cURL error', function () {
     $model = new MetaModel('dummy', 'llama-3-70b', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('Meta');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('Meta');
+    }
 });
 
-it('XaiModel handles cURL error', function () {
+it('XaiModel throws NetworkException on cURL error', function () {
     $model = new XaiModel('dummy', 'grok-1', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('xAI');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('xAI');
+    }
 });
 
 it('MetaModel sendMessage returns placeholder', function () {

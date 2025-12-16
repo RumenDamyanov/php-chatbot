@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Models;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
+use Rumenx\PhpChatbot\Exceptions\InvalidConfigException;
+use Rumenx\PhpChatbot\Exceptions\ModelException;
 
 /**
  * ModelFactory for the php-chatbot package.
@@ -18,193 +22,192 @@ use Rumenx\PhpChatbot\Contracts\AiModelInterface;
 class ModelFactory
 {
     /**
+     * Registry of known model classes and their configuration keys.
+     *
+     * @var array<string, array{key: string, default_model: string, default_endpoint: string}>
+     */
+    private const MODEL_REGISTRY = [
+        OpenAiModel::class => [
+            'key' => 'openai',
+            'default_model' => 'gpt-4o-mini',
+            'default_endpoint' => 'https://api.openai.com/v1/chat/completions',
+        ],
+        AnthropicModel::class => [
+            'key' => 'anthropic',
+            'default_model' => 'claude-3-5-sonnet-20241022',
+            'default_endpoint' => 'https://api.anthropic.com/v1/messages',
+        ],
+        XaiModel::class => [
+            'key' => 'xai',
+            'default_model' => 'grok-2-1212',
+            'default_endpoint' => 'https://api.x.ai/v1/chat/completions',
+        ],
+        GeminiModel::class => [
+            'key' => 'gemini',
+            'default_model' => 'gemini-1.5-flash',
+            'default_endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models',
+        ],
+        MetaModel::class => [
+            'key' => 'meta',
+            'default_model' => 'llama-3.3-70b-versatile',
+            'default_endpoint' => 'https://api.meta.ai/v1/chat/completions',
+        ],
+        DeepSeekAiModel::class => [
+            'key' => 'deepseek',
+            'default_model' => 'deepseek-chat',
+            'default_endpoint' => 'https://api.deepseek.com/v1/chat/completions',
+        ],
+    ];
+
+    /**
      * Create an AI model instance based on the provided configuration.
      *
      * @param array<string, mixed> $config Configuration array for the model.
      *
      * @return AiModelInterface The created AI model instance.
+     * @throws InvalidConfigException If configuration is invalid.
+     * @throws ModelException If model cannot be created.
      */
     public static function make(array $config): AiModelInterface
     {
-        // Model class name from config
-        $modelClass = null;
-        if (isset($config['model']) && is_string($config['model'])) {
-            // Model class name as string
-            $modelClass = $config['model'];
+        // Validate and extract model class
+        $modelClass = self::validateModelClass($config);
+        // Handle DefaultAiModel (no configuration needed)
+        if ($modelClass === DefaultAiModel::class) {
+            return new DefaultAiModel();
         }
-        if (!$modelClass || !class_exists($modelClass)) {
-            throw new \InvalidArgumentException(
-                'Invalid or missing model class in config.'
+
+        // Handle registered models
+        if (isset(self::MODEL_REGISTRY[$modelClass])) {
+            return self::createRegisteredModel($modelClass, $config);
+        }
+
+        // Handle custom user models
+        return self::createCustomModel($modelClass);
+    }
+
+    /**
+     * Validate and extract the model class from configuration.
+     *
+     * @param array<string, mixed> $config Configuration array.
+     *
+     * @return string The validated model class name.
+     * @throws InvalidConfigException If model class is invalid or missing.
+     */
+    private static function validateModelClass(array $config): string
+    {
+        if (!isset($config['model'])) {
+            throw new InvalidConfigException(
+                'Missing required "model" key in configuration.'
             );
         }
-        switch ($modelClass) {
-            case OpenAiModel::class:
-                // OpenAI config array
-                $openai = [];
-                if (isset($config['openai']) && is_array($config['openai'])) {
-                    // OpenAI config as array
-                    $openai = $config['openai'];
-                }
-                // OpenAI API key
-                $apiKey = '';
-                if (isset($openai['api_key']) && is_string($openai['api_key'])) {
-                    // API key as string
-                    $apiKey = $openai['api_key'];
-                }
-                // OpenAI model name
-                $model = 'gpt-4o-mini';
-                if (isset($openai['model']) && is_string($openai['model'])) {
-                    // Model name as string
-                    $model = $openai['model'];
-                }
-                // OpenAI endpoint
-                $endpoint = 'https://api.openai.com/v1/chat/completions';
-                if (isset($openai['endpoint']) && is_string($openai['endpoint'])) {
-                    // Endpoint as string
-                    $endpoint = $openai['endpoint'];
-                }
-                return new OpenAiModel($apiKey, $model, $endpoint);
-            case AnthropicModel::class:
-                // Anthropic config array
-                $anthropic = [];
-                if (isset($config['anthropic']) && is_array($config['anthropic'])) {
-                    // Anthropic config as array
-                    $anthropic = $config['anthropic'];
-                }
-                // Anthropic API key
-                $apiKey = '';
-                if (isset($anthropic['api_key']) && is_string($anthropic['api_key'])) {
-                    // API key as string
-                    $apiKey = $anthropic['api_key'];
-                }
-                // Anthropic model name
-                $model = 'claude-3-5-sonnet-20241022';
-                if (isset($anthropic['model']) && is_string($anthropic['model'])) {
-                    // Model name as string
-                    $model = $anthropic['model'];
-                }
-                // Anthropic endpoint
-                $endpoint = 'https://api.anthropic.com/v1/messages';
-                if (isset($anthropic['endpoint']) && is_string($anthropic['endpoint'])) {
-                    // Endpoint as string
-                    $endpoint = $anthropic['endpoint'];
-                }
-                return new AnthropicModel($apiKey, $model, $endpoint);
-            case XaiModel::class:
-                // xAI config array
-                $xai = [];
-                if (isset($config['xai']) && is_array($config['xai'])) {
-                    // xAI config as array
-                    $xai = $config['xai'];
-                }
-                // xAI API key
-                $apiKey = '';
-                if (isset($xai['api_key']) && is_string($xai['api_key'])) {
-                    // API key as string
-                    $apiKey = $xai['api_key'];
-                }
-                // xAI model name
-                $model = 'grok-2-1212';
-                if (isset($xai['model']) && is_string($xai['model'])) {
-                    // Model name as string
-                    $model = $xai['model'];
-                }
-                // xAI endpoint
-                $endpoint = 'https://api.x.ai/v1/chat/completions';
-                if (isset($xai['endpoint']) && is_string($xai['endpoint'])) {
-                    // Endpoint as string
-                    $endpoint = $xai['endpoint'];
-                }
-                return new XaiModel($apiKey, $model, $endpoint);
-            case GeminiModel::class:
-                // Gemini config array
-                $gemini = [];
-                if (isset($config['gemini']) && is_array($config['gemini'])) {
-                    // Gemini config as array
-                    $gemini = $config['gemini'];
-                }
-                // Gemini API key
-                $apiKey = '';
-                if (isset($gemini['api_key']) && is_string($gemini['api_key'])) {
-                    // API key as string
-                    $apiKey = $gemini['api_key'];
-                }
-                // Gemini model name
-                $model = 'gemini-1.5-flash';
-                if (isset($gemini['model']) && is_string($gemini['model'])) {
-                    // Model name as string
-                    $model = $gemini['model'];
-                }
-                // Gemini endpoint
-                $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models';
-                if (isset($gemini['endpoint']) && is_string($gemini['endpoint'])) {
-                    // Endpoint as string
-                    $endpoint = $gemini['endpoint'];
-                }
-                return new GeminiModel($apiKey, $model, $endpoint);
-            case MetaModel::class:
-                // Meta config array
-                $meta = [];
-                if (isset($config['meta']) && is_array($config['meta'])) {
-                    // Meta config as array
-                    $meta = $config['meta'];
-                }
-                // Meta API key
-                $apiKey = '';
-                if (isset($meta['api_key']) && is_string($meta['api_key'])) {
-                    // API key as string
-                    $apiKey = $meta['api_key'];
-                }
-                // Meta model name
-                $model = 'llama-3.3-70b-versatile';
-                if (isset($meta['model']) && is_string($meta['model'])) {
-                    // Model name as string
-                    $model = $meta['model'];
-                }
-                // Meta endpoint
-                $endpoint = 'https://api.meta.ai/v1/chat/completions';
-                if (isset($meta['endpoint']) && is_string($meta['endpoint'])) {
-                    // Endpoint as string
-                    $endpoint = $meta['endpoint'];
-                }
-                return new MetaModel($apiKey, $model, $endpoint);
-            case DeepSeekAiModel::class:
-                // DeepSeek config array
-                $deepseek = [];
-                if (isset($config['deepseek']) && is_array($config['deepseek'])) {
-                    // DeepSeek config as array
-                    $deepseek = $config['deepseek'];
-                }
-                // DeepSeek API key
-                $apiKey = '';
-                if (isset($deepseek['api_key']) && is_string($deepseek['api_key'])) {
-                    // API key as string
-                    $apiKey = $deepseek['api_key'];
-                }
-                // DeepSeek model name
-                $model = 'deepseek-chat';
-                if (isset($deepseek['model']) && is_string($deepseek['model'])) {
-                    // Model name as string
-                    $model = $deepseek['model'];
-                }
-                // DeepSeek endpoint
-                $endpoint = 'https://api.deepseek.com/v1/chat/completions';
-                if (isset($deepseek['endpoint']) && is_string($deepseek['endpoint'])) {
-                    // Endpoint as string
-                    $endpoint = $deepseek['endpoint'];
-                }
-                return new DeepSeekAiModel($apiKey, $model, $endpoint);
-            case DefaultAiModel::class:
-                return new DefaultAiModel();
-            default:
-                // Allow custom user models
-                $instance = new $modelClass();
-                if (!$instance instanceof AiModelInterface) {
-                    throw new \RuntimeException(
-                        'Custom model must implement AiModelInterface'
-                    );
-                }
-                return $instance;
+
+        if (!is_string($config['model'])) {
+            throw new InvalidConfigException(
+                'Model class must be a string, ' . gettype($config['model']) . ' given.'
+            );
         }
+
+        $modelClass = $config['model'];
+
+        if (!class_exists($modelClass)) {
+            throw new InvalidConfigException(
+                "Model class '{$modelClass}' does not exist."
+            );
+        }
+
+        return $modelClass;
+    }
+
+    /**
+     * Create a registered model instance.
+     *
+     * @param string               $modelClass Model class name.
+     * @param array<string, mixed> $config     Full configuration array.
+     *
+     * @return AiModelInterface The created model instance.
+     * @throws InvalidConfigException If configuration is invalid.
+     */
+    private static function createRegisteredModel(string $modelClass, array $config): AiModelInterface
+    {
+        $registry = self::MODEL_REGISTRY[$modelClass];
+        $configKey = $registry['key'];
+
+        // Extract model-specific configuration
+        $modelConfig = $config[$configKey] ?? [];
+
+        if (!is_array($modelConfig)) {
+            throw new InvalidConfigException(
+                "Configuration for '{$configKey}' must be an array, " . gettype($modelConfig) . ' given.'
+            );
+        }
+
+        // Extract and validate parameters
+        $apiKey = self::extractString($modelConfig, 'api_key', '');
+        $model = self::extractString($modelConfig, 'model', $registry['default_model']);
+        $endpoint = self::extractString($modelConfig, 'endpoint', $registry['default_endpoint']);
+
+        // Note: API keys and endpoints are validated at runtime by the models themselves.
+        // This allows flexibility for development/testing scenarios.
+
+        // Create the model instance
+        return new $modelClass($apiKey, $model, $endpoint);
+    }
+
+    /**
+     * Create a custom user model instance.
+     *
+     * @param string $modelClass Model class name.
+     *
+     * @return AiModelInterface The created model instance.
+     * @throws ModelException If custom model cannot be created.
+     * @throws \Error If PHP error occurs (abstract class, private constructor, etc.).
+     */
+    private static function createCustomModel(string $modelClass): AiModelInterface
+    {
+        try {
+            $instance = new $modelClass();
+        } catch (\Error $e) {
+            // Re-throw PHP errors (abstract class, private constructor, etc.)
+            // These represent programming errors, not runtime errors
+            throw $e;
+        } catch (\Exception $e) {
+            // Wrap exceptions (runtime errors) in ModelException
+            throw new ModelException(
+                "Failed to instantiate custom model '{$modelClass}': " . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+
+        if (!$instance instanceof AiModelInterface) {
+            throw new ModelException(
+                "Custom model '{$modelClass}' must implement AiModelInterface."
+            );
+        }
+
+        return $instance;
+    }
+
+    /**
+     * Extract a string value from an array with a default fallback.
+     *
+     * @param array<string, mixed> $array   The array to extract from.
+     * @param string               $key     The key to extract.
+     * @param string               $default Default value if key is missing or not a string.
+     *
+     * @return string The extracted string value.
+     */
+    private static function extractString(array $array, string $key, string $default): string
+    {
+        if (!isset($array[$key])) {
+            return $default;
+        }
+
+        if (!is_string($array[$key])) {
+            return $default;
+        }
+
+        return $array[$key];
     }
 }

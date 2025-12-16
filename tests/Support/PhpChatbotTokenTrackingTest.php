@@ -24,6 +24,10 @@ class MockModelWithTokens implements AiModelInterface {
     public function getModel(): string {
         return 'mock-model';
     }
+    
+    public function setModel(string $model): void {
+        // No-op for test mock
+    }
 }
 
 class MockModelWithoutTokens implements AiModelInterface {
@@ -34,6 +38,10 @@ class MockModelWithoutTokens implements AiModelInterface {
     
     public function getModel(): string {
         return 'mock-no-tokens';
+    }
+    
+    public function setModel(string $model): void {
+        // No-op for test mock
     }
 }
 
@@ -181,6 +189,14 @@ describe('PhpChatbot Token Tracking', function () {
             public function getResponse(string $input, array $context = []): ChatResponse {
                 return ChatResponse::fromString('Response', 'test');
             }
+            
+            public function getModel(): string {
+                return 'test';
+            }
+            
+            public function setModel(string $model): void {
+                // No-op
+            }
         };
         
         $chatbot = new PhpChatbot($model);
@@ -235,6 +251,10 @@ describe('PhpChatbot Token Tracking', function () {
             
             public function getModel(): string {
                 return 'ollama';
+            }
+            
+            public function setModel(string $model): void {
+                // No-op
             }
         };
         

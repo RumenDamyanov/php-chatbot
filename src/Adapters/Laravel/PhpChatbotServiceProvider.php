@@ -14,6 +14,8 @@
  * @phpversion 8.3
  */
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Adapters\Laravel;
 
 use Rumenx\PhpChatbot\PhpChatbot;

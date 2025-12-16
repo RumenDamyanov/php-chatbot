@@ -6,10 +6,15 @@ use Rumenx\PhpChatbot\Support\ChatResponse;
 
 use Rumenx\PhpChatbot\Models\OpenAiModel;
 
-it('OpenAiModel returns error on curl failure', function () {
-    $model = new OpenAiModel('invalid-key', 'gpt-3.5-turbo', 'http://localhost:9999/invalid'); // Unreachable endpoint
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('OpenAI');
+it('OpenAiModel throws NetworkException on curl failure', function () {
+    $model = new OpenAiModel('invalid-key', 'gpt-3.5-turbo', 'http://localhost:9999/invalid');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('OpenAI');
+        expect($e->getMessage())->toContain('Network error');
+    }
 });
 
 it('OpenAiModel returns fallback on missing choices', function () {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot;
 
 use Rumenx\PhpChatbot\Contracts\AiModelInterface;
@@ -7,6 +9,12 @@ use Rumenx\PhpChatbot\Support\ConversationMemory;
 use Rumenx\PhpChatbot\Support\ChatResponse;
 use Rumenx\PhpChatbot\Support\TokenUsage;
 use Rumenx\PhpChatbot\Support\CostCalculator;
+use Rumenx\PhpChatbot\Exceptions\PhpChatbotException;
+use Rumenx\PhpChatbot\Exceptions\NetworkException;
+use Rumenx\PhpChatbot\Exceptions\ApiException;
+use Rumenx\PhpChatbot\RateLimiting\RateLimiterInterface;
+use Rumenx\PhpChatbot\RateLimiting\RateLimitException;
+use Rumenx\PhpChatbot\Cache\CacheInterface;
 
 /**
  * Class PhpChatbot
@@ -62,20 +70,40 @@ final class PhpChatbot
     protected $costCalculator;
 
     /**
+     * Rate limiter for controlling request frequency.
+     *
+     * @var RateLimiterInterface|null
+     */
+    protected $rateLimiter;
+
+    /**
+     * Response cache for storing and retrieving cached responses.
+     *
+     * @var CacheInterface|null
+     */
+    protected $cache;
+
+    /**
      * Constructor for PhpChatbot.
      *
-     * @param AiModelInterface     $model   The AI model implementation.
-     * @param array<string, mixed> $config  Optional configuration for the chatbot.
-     * @param ConversationMemory|null $memory Optional conversation memory manager.
+     * @param AiModelInterface          $model       The AI model implementation.
+     * @param array<string, mixed>      $config      Optional configuration for the chatbot.
+     * @param ConversationMemory|null   $memory      Optional conversation memory manager.
+     * @param RateLimiterInterface|null $rateLimiter Optional rate limiter.
+     * @param CacheInterface|null       $cache       Optional response cache.
      */
     public function __construct(
         AiModelInterface $model,
         array $config = [],
-        ?ConversationMemory $memory = null
+        ?ConversationMemory $memory = null,
+        ?RateLimiterInterface $rateLimiter = null,
+        ?CacheInterface $cache = null
     ) {
         $this->model = $model;
         $this->config = $config;
         $this->memory = $memory;
+        $this->rateLimiter = $rateLimiter;
+        $this->cache = $cache;
         $this->lastResponse = null;
         $this->costCalculator = new CostCalculator();
     }
@@ -98,6 +126,37 @@ final class PhpChatbot
         // Extract session ID if provided
         $sessionId = $context['sessionId'] ?? null;
 
+        // Check rate limiting if enabled
+        if ($this->rateLimiter !== null) {
+            $rateLimitKey = $context['rate_limit_key'] ?? $sessionId ?? 'default';
+            $maxRequests = $context['rate_limit_max'] ?? 10;
+            $windowSeconds = $context['rate_limit_window'] ?? 60;
+
+            if (!$this->rateLimiter->allow($rateLimitKey, $maxRequests, $windowSeconds)) {
+                $resetIn = $this->rateLimiter->resetIn($rateLimitKey, $windowSeconds);
+                throw new RateLimitException(
+                    $rateLimitKey,
+                    $maxRequests,
+                    $windowSeconds,
+                    $resetIn
+                );
+            }
+        }
+
+        // Check cache if enabled (and caching is not disabled for this request)
+        $cacheEnabled = ($context['cache_enabled'] ?? true) && $this->cache !== null;
+        $cacheKey = '';
+
+        if ($cacheEnabled && $this->cache !== null) {
+            $cacheKey = $this->cache->generateKey($input, $context);
+            $cachedResponse = $this->cache->get($cacheKey);
+
+            if ($cachedResponse !== null) {
+                $this->lastResponse = $cachedResponse;
+                return (string) $cachedResponse;
+            }
+        }
+
         // Add conversation history to context if memory is enabled
         if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
             $history = $this->memory->getFormattedHistory($sessionId);
@@ -109,20 +168,40 @@ final class PhpChatbot
             $this->memory->addMessage($sessionId, 'user', $input);
         }
 
-        $response = $this->model->getResponse($input, $context);
+        try {
+            $response = $this->model->getResponse($input, $context);
 
-        // Store the ChatResponse for token tracking
-        $this->lastResponse = $response;
+            // Store the ChatResponse for token tracking
+            $this->lastResponse = $response;
 
-        // Get the content as string
-        $responseContent = (string) $response;
+            // Store in cache if enabled
+            if ($cacheEnabled && $cacheKey !== '' && $this->cache !== null) {
+                $cacheTtl = $context['cache_ttl'] ?? 3600;
+                $this->cache->set($cacheKey, $response, $cacheTtl);
+            }
 
-        // Store assistant's response in memory
-        if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
-            $this->memory->addMessage($sessionId, 'assistant', $responseContent);
+            // Get the content as string
+            $responseContent = (string) $response;
+
+            // Store assistant's response in memory
+            if ($this->memory !== null && $this->memory->isEnabled() && $sessionId !== null) {
+                $this->memory->addMessage($sessionId, 'assistant', $responseContent);
+            }
+
+            return $responseContent;
+        } catch (PhpChatbotException $e) {
+            // Check if we should propagate exceptions or return error messages
+            $throwExceptions = $context['throw_exceptions'] ?? false;
+
+            if ($throwExceptions) {
+                throw $e;
+            }
+
+            // Graceful degradation: return error message
+            $errorMessage = $e->getMessage();
+            $this->lastResponse = ChatResponse::fromString($errorMessage, 'error');
+            return $errorMessage;
         }
-
-        return $responseContent;
     }
 
     /**
@@ -360,6 +439,50 @@ final class PhpChatbot
     }
 
     /**
+     * Get the rate limiter instance.
+     *
+     * @return RateLimiterInterface|null The rate limiter, or null if not set.
+     */
+    public function getRateLimiter(): ?RateLimiterInterface
+    {
+        return $this->rateLimiter;
+    }
+
+    /**
+     * Set the rate limiter instance.
+     *
+     * @param RateLimiterInterface|null $rateLimiter The rate limiter to use, or null to disable.
+     *
+     * @return void
+     */
+    public function setRateLimiter(?RateLimiterInterface $rateLimiter): void
+    {
+        $this->rateLimiter = $rateLimiter;
+    }
+
+    /**
+     * Get the cache instance.
+     *
+     * @return CacheInterface|null The cache, or null if not set.
+     */
+    public function getCache(): ?CacheInterface
+    {
+        return $this->cache;
+    }
+
+    /**
+     * Set the cache instance.
+     *
+     * @param CacheInterface|null $cache The cache to use, or null to disable.
+     *
+     * @return void
+     */
+    public function setCache(?CacheInterface $cache): void
+    {
+        $this->cache = $cache;
+    }
+
+    /**
      * Estimate the cost for a given number of tokens.
      *
      * This is useful for budgeting before making an API call.
@@ -376,11 +499,7 @@ final class PhpChatbot
         ?string $model = null
     ): float {
         if ($model === null) {
-            if (method_exists($this->model, 'getModel')) {
-                $model = $this->model->getModel();
-            } else {
-                $model = 'unknown';
-            }
+            $model = $this->model->getModel();
         }
 
         return $this->costCalculator->estimate(

@@ -24,7 +24,14 @@
         }
     ],
     "require": {
-        "php": "^8.2"
+        "php": "^8.2",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "suggest": {
+        "psr/log": "^3.0 - For PSR-3 compatible logging support",
+        "monolog/monolog": "^3.0 - Recommended logger implementation",
+        "guzzlehttp/guzzle": "^7.0 - Alternative HTTP client (instead of cURL)"
     },
     "require-dev": {
         "pestphp/pest": "^2.0",

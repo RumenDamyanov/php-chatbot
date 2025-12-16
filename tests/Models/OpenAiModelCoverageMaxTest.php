@@ -25,11 +25,16 @@ it('OpenAiModel getModel returns initial model', function () {
     expect($model->getModel())->toBe('gpt-3.5-turbo');
 });
 
-it('OpenAiModel logs cURL error with logger', function () {
+it('OpenAiModel throws NetworkException on cURL error', function () {
     $logger = new DummyLogger();
     $model = new OpenAiModel('invalid-key', 'gpt-3.5-turbo', 'http://localhost:9999/invalid');
-    $model->getResponse('test', ['logger' => $logger]);
-    expect($logger->logs)->not->toBeEmpty();
+    try {
+        $model->getResponse('test', ['logger' => $logger]);
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('OpenAI');
+        expect($e->getMessage())->toContain('Network error');
+    }
 });
 
 it('OpenAiModel logs API error (no response) with logger', function () {
@@ -65,15 +70,19 @@ it('OpenAiModel logs exception with logger', function () {
 });
 
 it(
-    'OpenAiModel returns error if cURL fails',
+    'OpenAiModel throws NetworkException if cURL fails',
     function () {
         $model = new OpenAiModel(
             'dummy',
             'gpt-3.5-turbo',
             'http://localhost:9999/invalid'
         );
-        $response = (string) $model->getResponse('test');
-        expect($response)->toContain('OpenAI');
-        expect($response)->toContain('Error:');
+        try {
+            $model->getResponse('test');
+            expect(false)->toBeTrue('Expected NetworkException to be thrown');
+        } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+            expect($e->getMessage())->toContain('OpenAI');
+            expect($e->getMessage())->toContain('Network error');
+        }
     }
 );

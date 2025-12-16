@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Rumenx\PhpChatbot\Support\Storage\RedisStorage;
 
 describe('RedisStorage', function () {

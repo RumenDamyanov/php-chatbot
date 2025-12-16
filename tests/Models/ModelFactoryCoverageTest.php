@@ -15,6 +15,14 @@ class CustomModel implements \Rumenx\PhpChatbot\Contracts\AiModelInterface {
     public function getResponse(string $input, array $context = []): ChatResponse {
         return ChatResponse::fromString('custom', 'custom-model');
     }
+    
+    public function getModel(): string {
+        return 'custom-model';
+    }
+    
+    public function setModel(string $model): void {
+        // No-op for test mock
+    }
 }
 
 it('ModelFactory creates all core models with minimal config', function () {

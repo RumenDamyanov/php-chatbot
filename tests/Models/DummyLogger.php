@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 use Psr\Log\LoggerInterface;
 
 if (!class_exists('DummyLogger')) {

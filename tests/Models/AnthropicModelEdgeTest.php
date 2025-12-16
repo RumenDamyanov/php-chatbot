@@ -5,33 +5,47 @@ declare(strict_types=1);
 use Rumenx\PhpChatbot\Models\AnthropicModel;
 use Rumenx\PhpChatbot\Support\ChatResponse;
 
-it('AnthropicModel returns default prompt if context missing', function () {
+it('AnthropicModel throws ApiException if context missing', function () {
     $model = new AnthropicModel('dummy');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Anthropic');
+    }
 });
 
-it('AnthropicModel uses custom prompt and temperature', function () {
+it('AnthropicModel throws ApiException with custom prompt and temperature', function () {
     $model = new AnthropicModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 'Custom!',
-        'temperature' => 0.1,
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', [
+            'prompt' => 'Custom!',
+            'temperature' => 0.1,
+        ]);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Anthropic');
+    }
 });
 
-it('AnthropicModel handles non-string prompt', function () {
+it('AnthropicModel throws ApiException with non-string prompt', function () {
     $model = new AnthropicModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 123,
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', ['prompt' => 123]);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Anthropic');
+    }
 });
 
-it('AnthropicModel handles cURL error gracefully', function () {
+it('AnthropicModel throws NetworkException on cURL error', function () {
     $model = new AnthropicModel('dummy', 'claude-3-sonnet', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('Anthropic');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('Anthropic');
+    }
 });
 
 it('AnthropicModel returns fallback if choices missing', function () {

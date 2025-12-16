@@ -8,46 +8,64 @@ use Rumenx\PhpChatbot\Models\DeepSeekAiModel;
 
 require_once __DIR__ . '/DummyLogger.php';
 
-it('DeepSeekAiModel returns default prompt if context missing', function () {
+it('DeepSeekAiModel throws ApiException if context missing', function () {
     $model = new DeepSeekAiModel('dummy');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+    }
 });
 
-it('DeepSeekAiModel uses custom prompt and temperature', function () {
+it('DeepSeekAiModel throws ApiException with custom prompt and temperature', function () {
     $model = new DeepSeekAiModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 'Custom!',
-        'temperature' => 0.1,
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', [
+            'prompt' => 'Custom!',
+            'temperature' => 0.1,
+        ]);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+    }
 });
 
-it('DeepSeekAiModel handles non-string prompt', function () {
+it('DeepSeekAiModel throws ApiException with non-string prompt', function () {
     $model = new DeepSeekAiModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 123,
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', ['prompt' => 123]);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+    }
 });
 
-it('DeepSeekAiModel handles cURL error gracefully', function () {
+it('DeepSeekAiModel throws NetworkException on cURL error', function () {
     $model = new DeepSeekAiModel('dummy', 'deepseek-chat', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('DeepSeek');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+    }
 });
 
 it(
-    'DeepSeekAiModel returns error if cURL fails',
+    'DeepSeekAiModel throws NetworkException if cURL fails',
     function () {
         $model = new \Rumenx\PhpChatbot\Models\DeepSeekAiModel(
             'dummy',
             'deepseek-chat',
             'http://localhost:9999/invalid'
         );
-        $response = (string) $model->getResponse('test');
-        expect($response)->toContain('DeepSeek');
-        expect($response)->toContain('Error');
+        try {
+            $model->getResponse('test');
+            expect(false)->toBeTrue('Expected NetworkException to be thrown');
+        } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+            expect($e->getMessage())->toContain('DeepSeek');
+            expect($e->getMessage())->toContain('Network error');
+        }
     }
 );
 

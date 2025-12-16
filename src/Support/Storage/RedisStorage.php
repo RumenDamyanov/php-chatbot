@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Support\Storage;
 
 use Rumenx\PhpChatbot\Contracts\MemoryStorageInterface;

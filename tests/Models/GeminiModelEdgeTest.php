@@ -6,32 +6,44 @@ use Rumenx\PhpChatbot\Support\ChatResponse;
 
 use Rumenx\PhpChatbot\Models\GeminiModel;
 
-it('GeminiModel returns default prompt if context missing', function () {
+it('GeminiModel throws ApiException if context missing', function () {
     $model = new GeminiModel('dummy');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Google Gemini');
+    }
 });
 
-it('GeminiModel uses custom prompt', function () {
+it('GeminiModel throws ApiException with custom prompt', function () {
     $model = new GeminiModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 'Custom!',
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', ['prompt' => 'Custom!']);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Google Gemini');
+    }
 });
 
-it('GeminiModel handles non-string prompt', function () {
+it('GeminiModel throws ApiException with non-string prompt', function () {
     $model = new GeminiModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 123,
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', ['prompt' => 123]);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('Google Gemini');
+    }
 });
 
-it('GeminiModel handles cURL error gracefully', function () {
+it('GeminiModel throws NetworkException on cURL error', function () {
     $model = new GeminiModel('dummy', 'gemini-1.5-pro', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('Google Gemini');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('Google Gemini');
+    }
 });
 
 it('GeminiModel returns fallback if candidates missing', function () {

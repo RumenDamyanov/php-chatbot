@@ -6,32 +6,44 @@ use Rumenx\PhpChatbot\Support\ChatResponse;
 
 use Rumenx\PhpChatbot\Models\XaiModel;
 
-it('XaiModel returns default prompt if context missing', function () {
+it('XaiModel throws ApiException if context missing', function () {
     $model = new XaiModel('dummy');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('xAI');
+    }
 });
 
-it('XaiModel uses custom prompt', function () {
+it('XaiModel throws ApiException with custom prompt', function () {
     $model = new XaiModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 'Custom!',
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', ['prompt' => 'Custom!']);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('xAI');
+    }
 });
 
-it('XaiModel handles non-string prompt', function () {
+it('XaiModel throws ApiException with non-string prompt', function () {
     $model = new XaiModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'prompt' => 123,
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', ['prompt' => 123]);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('xAI');
+    }
 });
 
-it('XaiModel handles cURL error gracefully', function () {
+it('XaiModel throws NetworkException on cURL error', function () {
     $model = new XaiModel('dummy', 'grok-1', 'http://localhost:9999/invalid');
-    $response = (string) $model->getResponse('test');
-    expect($response)->toContain('xAI');
+    try {
+        $model->getResponse('test');
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('xAI');
+    }
 });
 
 it('XaiModel returns fallback if choices missing', function () {

@@ -6,30 +6,41 @@ use Rumenx\PhpChatbot\Models\DeepSeekAiModel;
 
 require_once __DIR__ . '/DummyLogger.php';
 
-it('DeepSeekAiModel logs cURL error with logger', function () {
+it('DeepSeekAiModel throws NetworkException on cURL error', function () {
     $logger = new DummyLogger();
     $model = new DeepSeekAiModel('dummy', 'deepseek-chat', 'http://localhost:9999/invalid');
-    $model->getResponse('test', ['logger' => $logger]);
-    expect($logger->logs)->not->toBeEmpty();
-    expect($logger->logs[0])->toContain('cURL error');
+    try {
+        $model->getResponse('test', ['logger' => $logger]);
+        expect(false)->toBeTrue('Expected NetworkException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\NetworkException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+        expect($logger->logs)->not->toBeEmpty();
+    }
 });
 
-it('DeepSeekAiModel logs API error with logger', function () {
+it('DeepSeekAiModel throws ApiException on invalid response', function () {
     $logger = new DummyLogger();
     $model = new DeepSeekAiModel('dummy');
-    // Simulate API error by passing input that will not match choices
-    $model->getResponse('test', ['logger' => $logger]);
-    expect($logger->logs)->not->toBeEmpty();
-    expect($logger->logs[0])->toContain('API error');
+    try {
+        $model->getResponse('test', ['logger' => $logger]);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+        expect($logger->logs)->not->toBeEmpty();
+    }
 });
 
-it('DeepSeekAiModel handles non-numeric temperature and max_tokens', function () {
+it('DeepSeekAiModel throws ApiException with non-numeric temperature and max_tokens', function () {
     $model = new DeepSeekAiModel('dummy');
-    $response = (string) $model->getResponse('test', [
-        'temperature' => 'not-a-number',
-        'max_tokens' => 'not-a-number',
-    ]);
-    expect($response)->toContain('No response');
+    try {
+        $model->getResponse('test', [
+            'temperature' => 'not-a-number',
+            'max_tokens' => 'not-a-number',
+        ]);
+        expect(false)->toBeTrue('Expected ApiException to be thrown');
+    } catch (\Rumenx\PhpChatbot\Exceptions\ApiException $e) {
+        expect($e->getMessage())->toContain('DeepSeek');
+    }
 });
 
 it('DeepSeekAiModel setModel/getModel edge cases', function () {

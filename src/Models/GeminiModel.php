@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rumenx\PhpChatbot\Models;
 
 use Rumenx\PhpChatbot\Contracts\StreamableModelInterface;
 use Rumenx\PhpChatbot\Support\HttpClientInterface;
 use Rumenx\PhpChatbot\Support\CurlHttpClient;
 use Rumenx\PhpChatbot\Support\ChatResponse;
+use Rumenx\PhpChatbot\Exceptions\NetworkException;
+use Rumenx\PhpChatbot\Exceptions\ApiException;
 
 /**
  * Gemini Model implementation for the php-chatbot package.
@@ -104,17 +108,39 @@ class GeminiModel implements StreamableModelInterface
                 && is_string($context['prompt'])
                 ? $context['prompt']
                 : 'You are a helpful chatbot.';
-            $data = [
-                'contents' => [
-                    [
-                        'role' => 'user',
-                        'parts' => [
-                            [
-                                'text' => $systemPrompt . "\n" . $input
-                            ]
-                        ]
-                    ]
+
+            // Build contents array with conversation history (Gemini format)
+            $contents = [];
+
+            // Build the conversation: system prompt + history + current message
+            $conversationText = $systemPrompt . "\n\n";
+
+            // Add conversation history if provided
+            if (!empty($context['messages']) && is_array($context['messages'])) {
+                foreach ($context['messages'] as $msg) {
+                    if (
+                        is_array($msg) &&
+                        isset($msg['role'], $msg['content']) &&
+                        is_string($msg['role']) &&
+                        is_string($msg['content'])
+                    ) {
+                        $conversationText .= ucfirst($msg['role']) . ": " . $msg['content'] . "\n\n";
+                    }
+                }
+            }
+
+            // Add current user message
+            $conversationText .= "User: " . $input;
+
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [
+                    ['text' => $conversationText]  // Now includes conversation history!
                 ]
+            ];
+
+            $data = [
+                'contents' => $contents
             ];
             $url = rtrim($this->endpoint, '/')
                 . '/' . $this->model
@@ -131,14 +157,44 @@ class GeminiModel implements StreamableModelInterface
                 ]
             );
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+            // Disable SSL verification in test mode (macOS SIP certificate issue workaround)
+            if (getenv('PHP_CHATBOT_TEST_MODE') === '1') {
+                /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                /** @phpstan-ignore-next-line */
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            }
+
             $result = curl_exec($ch);
             if ($result === false) {
                 $error = curl_error($ch);
+                $errorCode = curl_errno($ch);
+                if (
+                    isset($context['logger'])
+                    && $context['logger'] instanceof \Psr\Log\LoggerInterface
+                ) {
+                    $context['logger']->error(
+                        'GeminiModel cURL error: ' . $error,
+                        ['data' => $data, 'curl_error_code' => $errorCode]
+                    );
+                }
                 curl_close($ch);
-                return ChatResponse::fromString('[Google Gemini] Error: ' . $error, $this->model);
+
+                // Throw NetworkException for cURL errors
+                throw new NetworkException(
+                    '[Google Gemini] Network error: ' . $error,
+                    $errorCode,
+                    $error
+                );
             }
-            $response = json_decode(is_string($result) ? $result : '', true);
+
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
+
+            $response = json_decode(is_string($result) ? $result : '', true);
+
+            // Check for successful response
             if (
                 is_array($response)
                 && isset($response['candidates'][0]['content']['parts'][0]['text'])
@@ -149,10 +205,44 @@ class GeminiModel implements StreamableModelInterface
                 $content = $response['candidates'][0]['content']['parts'][0]['text'];
                 return ChatResponse::fromGemini($content, $response, $this->model);
             }
-            // Fallback for missing candidates/content
-            return ChatResponse::fromString('[Google Gemini] No response.', $this->model);
+
+            // Handle API errors
+            if (
+                isset($context['logger'])
+                && $context['logger'] instanceof \Psr\Log\LoggerInterface
+            ) {
+                $context['logger']->error(
+                    'GeminiModel API error: No valid response',
+                    ['response' => $response, 'http_code' => $httpCode]
+                );
+            }
+
+            // Throw ApiException for invalid API responses
+            throw new ApiException(
+                '[Google Gemini] Invalid API response: No content in response',
+                $httpCode,
+                is_string($result) ? $result : json_encode($response)
+            );
+        } catch (NetworkException | ApiException $e) {
+            // Re-throw our custom exceptions
+            throw $e;
         } catch (\Throwable $e) {
-            return ChatResponse::fromString('[Google Gemini] Exception: ' . $e->getMessage(), $this->model);
+            // Wrap unexpected exceptions
+            if (
+                isset($context['logger'])
+                && $context['logger'] instanceof \Psr\Log\LoggerInterface
+            ) {
+                $context['logger']->error(
+                    'GeminiModel unexpected exception: ' . $e->getMessage(),
+                    ['exception' => get_class($e)]
+                );
+            }
+            throw new ApiException(
+                '[Google Gemini] Unexpected error: ' . $e->getMessage(),
+                0,
+                '',
+                $e
+            );
         }
     }
 

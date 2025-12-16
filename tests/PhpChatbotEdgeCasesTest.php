@@ -15,6 +15,14 @@ class DummyModel implements AiModelInterface {
         }
         return ChatResponse::fromString('dummy:' . $input, 'dummy-model');
     }
+    
+    public function getModel(): string {
+        return 'dummy-model';
+    }
+    
+    public function setModel(string $model): void {
+        // No-op for test mock
+    }
 }
 
 it('PhpChatbot ask() works with empty input and config', function () {
