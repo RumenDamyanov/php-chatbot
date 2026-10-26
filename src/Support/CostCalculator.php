@@ -26,6 +26,10 @@ class CostCalculator
      * @var array<string, array{input: float, output: float}>
      */
     protected const PRICING = [
+        // OpenAI GPT-5.4 models (Oct 2026)
+        'gpt-5.4-mini' => ['input' => 0.75, 'output' => 4.50],
+        'gpt-5.4' => ['input' => 2.50, 'output' => 15.00],
+
         // OpenAI GPT-4 models
         'gpt-4-turbo' => ['input' => 10.00, 'output' => 30.00],
         'gpt-4-turbo-preview' => ['input' => 10.00, 'output' => 30.00],
@@ -53,6 +57,12 @@ class CostCalculator
         'o1-preview' => ['input' => 15.00, 'output' => 60.00],
         'o1-mini' => ['input' => 3.00, 'output' => 12.00],
 
+        // Anthropic Claude models (Oct 2026)
+        'claude-opus-5' => ['input' => 5.00, 'output' => 25.00],
+        'claude-sonnet-5' => ['input' => 2.00, 'output' => 10.00],
+        'claude-haiku-4-5' => ['input' => 1.00, 'output' => 5.00],
+        'claude-haiku-4-5-20251001' => ['input' => 1.00, 'output' => 5.00],
+
         // Anthropic Claude models
         'claude-3-5-sonnet' => ['input' => 3.00, 'output' => 15.00],
         'claude-3-5-sonnet-20241022' => ['input' => 3.00, 'output' => 15.00],
@@ -72,6 +82,9 @@ class CostCalculator
         'gemini-1.5-flash' => ['input' => 0.075, 'output' => 0.30],
         'gemini-1.5-flash-8b' => ['input' => 0.0375, 'output' => 0.15],
         'gemini-pro' => ['input' => 0.50, 'output' => 1.50],
+
+        // xAI Grok models (Oct 2026)
+        'grok-4.6' => ['input' => 2.00, 'output' => 6.00],
 
         // xAI Grok models
         'grok-beta' => ['input' => 5.00, 'output' => 15.00],

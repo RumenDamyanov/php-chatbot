@@ -29,22 +29,22 @@ class ModelFactory
     private const MODEL_REGISTRY = [
         OpenAiModel::class => [
             'key' => 'openai',
-            'default_model' => 'gpt-4o-mini',
+            'default_model' => 'gpt-5.4-mini',
             'default_endpoint' => 'https://api.openai.com/v1/chat/completions',
         ],
         AnthropicModel::class => [
             'key' => 'anthropic',
-            'default_model' => 'claude-3-5-sonnet-20241022',
+            'default_model' => 'claude-sonnet-5',
             'default_endpoint' => 'https://api.anthropic.com/v1/messages',
         ],
         XaiModel::class => [
             'key' => 'xai',
-            'default_model' => 'grok-2-1212',
+            'default_model' => 'grok-4.6',
             'default_endpoint' => 'https://api.x.ai/v1/chat/completions',
         ],
         GeminiModel::class => [
             'key' => 'gemini',
-            'default_model' => 'gemini-1.5-flash',
+            'default_model' => 'gemini-3.8-flash',
             'default_endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models',
         ],
         MetaModel::class => [

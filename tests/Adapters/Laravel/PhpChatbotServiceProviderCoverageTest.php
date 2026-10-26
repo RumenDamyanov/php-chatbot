@@ -52,25 +52,29 @@ class PhpChatbotServiceProviderCoverageTest extends TestCase
      */
     public function testRegisterBindsSingleton(): void
     {
-        $app = $this->getMockBuilder('stdClass')
-            ->addMethods(['singleton'])
-            ->getMock();
-        $app->expects($this->once())
-            ->method('singleton')
-            ->with(
-                $this->equalTo(\Rumenx\PhpChatbot\PhpChatbot::class),
-                $this->callback(function ($closure) {
-                    $chatbot = $closure(null);
-                    $this->assertInstanceOf(\Rumenx\PhpChatbot\PhpChatbot::class, $chatbot);
-                    return true;
-                })
-            );
+        $test = $this;
+        $app = new class ($test) {
+            public int $calls = 0;
+
+            public function __construct(private TestCase $test)
+            {
+            }
+
+            public function singleton(string $abstract, callable $concrete): void
+            {
+                $this->calls++;
+                $this->test->assertSame(PhpChatbot::class, $abstract);
+                $chatbot = $concrete(null);
+                $this->test->assertInstanceOf(PhpChatbot::class, $chatbot);
+            }
+        };
         $provider = $this->getMockBuilder(PhpChatbotServiceProvider::class)
             ->disableOriginalConstructor()
             ->onlyMethods([])
             ->getMock();
         $provider->app = $app;
         $provider->register();
+        $this->assertSame(1, $app->calls);
     }
 
     /**

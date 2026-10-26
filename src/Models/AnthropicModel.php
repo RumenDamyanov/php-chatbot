@@ -57,13 +57,13 @@ class AnthropicModel implements StreamableModelInterface
      * AnthropicModel constructor.
      *
      * @param string $apiKey   Anthropic API key
-     * @param string $model    Model name (default: claude-3-5-sonnet-20241022)
+     * @param string $model    Model name (default: claude-sonnet-5)
      * @param string $endpoint API endpoint URL
      * @param HttpClientInterface|null $httpClient Optional HTTP client (for testing)
      */
     public function __construct(
         string $apiKey,
-        string $model = 'claude-3-5-sonnet-20241022',
+        string $model = 'claude-sonnet-5',
         string $endpoint = 'https://api.anthropic.com/v1/messages',
         ?HttpClientInterface $httpClient = null
     ) {

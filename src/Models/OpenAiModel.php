@@ -35,13 +35,13 @@ class OpenAiModel implements StreamableModelInterface
      * OpenAiModel constructor.
      *
      * @param string $apiKey   The OpenAI API key.
-     * @param string $model    The model name (default: gpt-4o-mini).
+     * @param string $model    The model name (default: gpt-5.4-mini).
      * @param string $endpoint The API endpoint.
      * @param HttpClientInterface|null $httpClient Optional HTTP client (for testing).
      */
     public function __construct(
         string $apiKey,
-        string $model = 'gpt-4o-mini',
+        string $model = 'gpt-5.4-mini',
         string $endpoint = 'https://api.openai.com/v1/chat/completions',
         ?HttpClientInterface $httpClient = null
     ) {

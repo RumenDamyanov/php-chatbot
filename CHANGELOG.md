@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-26
+
+### Security
+
+- Reject Gemini model names that contain path separators before they are placed in the generateContent URL.
+- Document that PHP2Shell ([CVE-2026-109618](https://www.cve.org/CVERecord?id=CVE-2026-109618), [CVE-2026-109619](https://www.cve.org/CVERecord?id=CVE-2026-109619)) is in the PHP engine: this package cannot patch it. Run PHP **8.3.36+**, **8.4.27+**, or **8.5.12+** ([PHP Foundation advisory](https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security/), [CISA alert](https://www.cisa.gov/news-events/alerts/2026/10/21/critical-vulnerabilities-php-require-immediate-patching)).
+
+### Changed
+
+- Require PHP **^8.3**. PHP 8.2 reaches upstream end of life on 31 December 2026; stay on 1.1.x if you must remain on 8.2 (and use **8.2.35+** until then).
+- CI tests PHP 8.3, 8.4, and 8.5. Coverage is collected on 8.4 only.
+- Default chat models: OpenAI `gpt-5.4-mini`, Anthropic `claude-sonnet-5`, Google `gemini-3.8-flash`, xAI `grok-4.6`. Also priced and documented: `gpt-5.4`, `claude-opus-5`, `claude-haiku-4-5`, `grok-4.7`. Older model ids still work when set explicitly.
+- DeepSeek stays on `deepseek-chat`. Meta stays on `llama-3.3-70b-versatile`.
+
 ### Added
 - **Token & Cost Tracking** - Comprehensive monitoring and cost optimization features
   - New `TokenUsage` class to track prompt/completion/total tokens
@@ -27,10 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New code can access rich metadata through `ChatResponse` object
   - Example: `$response = $chatbot->ask('Hello'); echo $response;` // Still works!
 - **Updated all AI model defaults to latest stable versions** (Closes #9)
-  - OpenAI: `gpt-3.5-turbo` → `gpt-4o-mini` (legacy to current)
-  - Anthropic: `claude-3-sonnet-20240229` → `claude-3-5-sonnet-20241022` (deprecated to stable)
-  - Gemini: `gemini-default` → `gemini-1.5-flash` (placeholder to stable)
-  - xAI: `xai-default` → `grok-2-1212` (placeholder to stable)
+  - OpenAI: `gpt-3.5-turbo` → `gpt-5.4-mini`
+  - Anthropic: `claude-3-sonnet-20240229` → `claude-sonnet-5`
+  - Gemini: `gemini-default` → `gemini-3.8-flash`
+  - xAI: `xai-default` → `grok-4.6`
   - Meta: `meta-default` → `llama-3.3-70b-versatile` (placeholder to stable)
   - DeepSeek: `deepseek-chat` (no change - already current)
 - **Migration Note**: Users can still specify old model names explicitly in configuration
@@ -74,13 +88,13 @@ To migrate to the new model defaults:
 // New default (recommended)
 'openai' => [
     'api_key' => getenv('OPENAI_API_KEY'),
-    // Uses gpt-4o-mini by default
+    // Uses gpt-5.4-mini by default
 ],
 
 // Or specify explicitly
 'openai' => [
     'api_key' => getenv('OPENAI_API_KEY'),
-    'model' => 'gpt-4o-mini', // or any other supported model
+    'model' => 'gpt-5.4-mini', // or any other supported model
 ],
 ```
 

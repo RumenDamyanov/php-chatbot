@@ -24,7 +24,7 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "ext-curl": "*",
         "ext-json": "*"
     },
@@ -34,14 +34,14 @@
         "guzzlehttp/guzzle": "^7.0 - Alternative HTTP client (instead of cURL)"
     },
     "require-dev": {
-        "pestphp/pest": "^2.0",
-        "phpstan/phpstan": "^1.10 || ^2.0",
+        "pestphp/pest": "^4.0",
+        "phpstan/phpstan": "^2.0",
         "squizlabs/php_codesniffer": "^3.7 || ^4.0",
         "symfony/config": "^7.3",
         "symfony/dependency-injection": "^7.3",
         "symfony/http-kernel": "^7.3",
         "symfony/yaml": "^7.3",
-        "phpunit/phpunit": "^10.0"
+        "phpunit/phpunit": "^12.0"
     },
     "autoload": {
         "psr-4": {
