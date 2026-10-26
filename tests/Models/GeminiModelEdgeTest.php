@@ -114,3 +114,10 @@ it(
         expect($response)->toBe('Hello from Gemini!');
     }
 );
+
+test('GeminiModel rejects a model name that could change the request path', function () {
+    $model = new GeminiModel('dummy-key', '../other-api', 'http://localhost:9999/invalid');
+
+    expect(fn () => $model->getResponse('hello'))
+        ->toThrow(InvalidArgumentException::class, 'Invalid Gemini model name');
+});

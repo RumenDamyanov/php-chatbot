@@ -85,10 +85,10 @@ Comprehensive documentation and guides are available in our [GitHub Wiki](https:
 
 | Provider   | Example Models / Notes                                 | API Key Required | Local/Remote | Streaming |
 |------------|--------------------------------------------------------|------------------|--------------|-----------|
-| OpenAI     | gpt-4.1, gpt-4o, gpt-4o-mini, gpt-3.5-turbo, etc.      | Yes              | Remote       | ✅        |
-| Anthropic  | Claude 3 Sonnet, 3.7, 4, etc.                          | Yes              | Remote       | ✅        |
-| xAI        | Grok-1, Grok-1.5, etc.                                 | Yes              | Remote       | ✅        |
-| Google     | Gemini 1.5 Pro, Gemini 1.5 Flash, etc.                 | Yes              | Remote       | ✅        |
+| OpenAI     | gpt-5.4, gpt-5.4-mini, gpt-4o, gpt-4o-mini             | Yes              | Remote       | ✅        |
+| Anthropic  | Claude Opus 5, Sonnet 5, Haiku 4.5                     | Yes              | Remote       | ✅        |
+| xAI        | Grok 4.7, Grok 4.6, Grok 4.5                           | Yes              | Remote       | ✅        |
+| Google     | Gemini 3.8 Flash, Gemini 3.5 Flash-Lite                | Yes              | Remote       | ✅        |
 | Meta       | Llama 3 (8B, 70B), etc.                                | Yes              | Remote       | ✅        |
 | DeepSeek   | DeepSeek Chat, DeepSeek Coder, etc.                    | Yes              | Remote       | ✅        |
 | Ollama     | llama2, mistral, phi3, and any local Ollama model      | No (local) / Opt | Local/Remote | ✅        |

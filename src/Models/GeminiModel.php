@@ -55,13 +55,13 @@ class GeminiModel implements StreamableModelInterface
      * GeminiModel constructor.
      *
      * @param string $apiKey   The API key for Gemini.
-     * @param string $model    The model name (default: gemini-1.5-flash).
+     * @param string $model    The model name (default: gemini-3.8-flash).
      * @param string $endpoint The API endpoint.
      * @param HttpClientInterface|null $httpClient Optional HTTP client (for testing).
      */
     public function __construct(
         string $apiKey,
-        string $model = 'gemini-1.5-flash',
+        string $model = 'gemini-3.8-flash',
         string $endpoint = 'https://api.gemini.com/v1/chat',
         ?HttpClientInterface $httpClient = null
     ) {
@@ -81,6 +81,22 @@ class GeminiModel implements StreamableModelInterface
     public function setModel(string $model): void
     {
         $this->model = $model;
+    }
+
+    /**
+     * Build a Gemini action URL.
+     *
+     * The model name is part of the path, so separators and traversal are rejected.
+     */
+    private function geminiUrl(string $action): string
+    {
+        if (preg_match('/^[A-Za-z0-9._-]+$/', $this->model) !== 1) {
+            throw new \InvalidArgumentException('Invalid Gemini model name.');
+        }
+
+        return rtrim($this->endpoint, '/')
+            . '/' . $this->model
+            . ':' . $action . '?key=' . $this->apiKey;
     }
 
     /**
@@ -142,9 +158,7 @@ class GeminiModel implements StreamableModelInterface
             $data = [
                 'contents' => $contents
             ];
-            $url = rtrim($this->endpoint, '/')
-                . '/' . $this->model
-                . ':generateContent?key=' . $this->apiKey;
+            $url = $this->geminiUrl('generateContent');
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
@@ -223,7 +237,7 @@ class GeminiModel implements StreamableModelInterface
                 $httpCode,
                 is_string($result) ? $result : json_encode($response)
             );
-        } catch (NetworkException | ApiException $e) {
+        } catch (NetworkException | ApiException | \InvalidArgumentException $e) {
             // Re-throw our custom exceptions
             throw $e;
         } catch (\Throwable $e) {
@@ -293,9 +307,7 @@ class GeminiModel implements StreamableModelInterface
             ]
         ];
 
-        $url = rtrim($this->endpoint, '/')
-            . '/' . $this->model
-            . ':streamGenerateContent?key=' . $this->apiKey;
+        $url = $this->geminiUrl('streamGenerateContent');
 
         $streamBuffer = new \Rumenx\PhpChatbot\Support\StreamBuffer();
         $chunks = [];

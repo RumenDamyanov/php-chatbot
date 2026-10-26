@@ -54,13 +54,13 @@ class XaiModel implements StreamableModelInterface
      * XaiModel constructor.
      *
      * @param string $apiKey   The API key for xAI.
-     * @param string $model    The model name (default: grok-2-1212).
+     * @param string $model    The model name (default: grok-4.6).
      * @param string $endpoint The API endpoint.
      * @param HttpClientInterface|null $httpClient Optional HTTP client for dependency injection.
      */
     public function __construct(
         string $apiKey,
-        string $model = 'grok-2-1212',
+        string $model = 'grok-4.6',
         string $endpoint = 'https://api.xai.com/v1/chat',
         ?HttpClientInterface $httpClient = null
     ) {

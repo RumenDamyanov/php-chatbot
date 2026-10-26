@@ -30,7 +30,7 @@ class Configuration implements ConfigurationInterface
             ->info('API key for the chatbot service')
             ->end()
                 ->scalarNode('model')
-            ->defaultValue('gpt-3.5-turbo')
+            ->defaultValue('gpt-5.4-mini')
             ->info('Default AI model')
             ->end()
             ->end();

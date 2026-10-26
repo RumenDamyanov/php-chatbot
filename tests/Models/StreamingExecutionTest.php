@@ -80,7 +80,7 @@ test('OpenAiModel default parameters are set correctly for streaming', function 
     $model = new OpenAiModel('test-api-key');
     
     // Get model details
-    expect($model->getModel())->toBe('gpt-4o-mini');
+    expect($model->getModel())->toBe('gpt-5.4-mini');
     expect($model->supportsStreaming())->toBeTrue();
     
     // Verify it returns a generator
@@ -91,7 +91,7 @@ test('OpenAiModel default parameters are set correctly for streaming', function 
 test('AnthropicModel default parameters are set correctly for streaming', function () {
     $model = new AnthropicModel('test-api-key');
     
-    expect($model->getModel())->toBe('claude-3-5-sonnet-20241022');
+    expect($model->getModel())->toBe('claude-sonnet-5');
     expect($model->supportsStreaming())->toBeTrue();
     
     $generator = $model->getStreamingResponse('test');
@@ -101,7 +101,7 @@ test('AnthropicModel default parameters are set correctly for streaming', functi
 test('GeminiModel default parameters are set correctly for streaming', function () {
     $model = new GeminiModel('test-api-key');
     
-    expect($model->getModel())->toBe('gemini-1.5-flash');
+    expect($model->getModel())->toBe('gemini-3.8-flash');
     expect($model->supportsStreaming())->toBeTrue();
     
     $generator = $model->getStreamingResponse('test');
@@ -111,7 +111,7 @@ test('GeminiModel default parameters are set correctly for streaming', function 
 test('XaiModel default parameters are set correctly for streaming', function () {
     $model = new XaiModel('test-api-key');
     
-    expect($model->getModel())->toBe('grok-2-1212');
+    expect($model->getModel())->toBe('grok-4.6');
     expect($model->supportsStreaming())->toBeTrue();
     
     $generator = $model->getStreamingResponse('test');

@@ -128,6 +128,9 @@ describe('CostCalculator', function () {
         expect($models)->toBeArray();
         expect($models)->toContain('gpt-4o');
         expect($models)->toContain('gpt-4o-mini');
+        expect($models)->toContain('gpt-5.4-mini');
+        expect($models)->toContain('claude-sonnet-5');
+        expect($models)->toContain('grok-4.6');
         expect($models)->toContain('claude-3-5-sonnet');
         expect($models)->toContain('gemini-1.5-pro');
         expect($models)->toContain('deepseek-chat');
