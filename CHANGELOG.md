@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.0] - 2026-10-26
+## [1.2.0] - 2026-10-26
 
 ### Security
 
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Require PHP **^8.3**. PHP 8.2 reaches upstream end of life on 31 December 2026; stay on 1.0.x if you must remain on 8.2 (and use **8.2.35+** until then).
+- Require PHP **^8.3**. PHP 8.2 reaches upstream end of life on 31 December 2026; stay on 1.1.x if you must remain on 8.2 (and use **8.2.35+** until then).
 - CI tests PHP 8.3, 8.4, and 8.5. Coverage is collected on 8.4 only.
 - Default chat models: OpenAI `gpt-5.4-mini`, Anthropic `claude-sonnet-5`, Google `gemini-3.8-flash`, xAI `grok-4.6`. Also priced and documented: `gpt-5.4`, `claude-opus-5`, `claude-haiku-4-5`, `grok-4.7`. Older model ids still work when set explicitly.
 - DeepSeek stays on `deepseek-chat`. Meta stays on `llama-3.3-70b-versatile`.

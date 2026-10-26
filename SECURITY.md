@@ -6,7 +6,8 @@ We actively support the following versions of php-chatbot:
 
 | Version | PHP  | Supported          |
 | ------- | ---- | ------------------ |
-| 1.1.x   | 8.3+ | :white_check_mark: |
+| 1.2.x   | 8.3+ | :white_check_mark: |
+| 1.1.x   | 8.2+ | :white_check_mark: until PHP 8.2 EOL (31 Dec 2026) |
 | 1.0.x   | 8.2+ | :white_check_mark: until PHP 8.2 EOL (31 Dec 2026) |
 | < 1.0   |      | :x:                |
 
